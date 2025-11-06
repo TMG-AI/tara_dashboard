@@ -40,8 +40,33 @@ const SEEN_LINK = "mentions:seen:canon";
 const RETENTION_DAYS = 14; // Keep articles for 14 days
 
 // ---- config ----
-// Support both comma and semicolon delimiters for RSS_FEEDS
+// Support both old RSS_FEEDS variable and new entity-specific feeds
 const RSS_FEEDS = (process.env.RSS_FEEDS || "").split(/[,;]/).map(s => s.trim()).filter(Boolean);
+
+// Entity-specific RSS feeds
+const ENTITY_FEEDS = {
+  'delta_air_lines': process.env.RSS_FEED_DELTA_AIR_LINES,
+  'guardant_health': process.env.RSS_FEED_GUARDANT_HEALTH,
+  'albemarle': process.env.RSS_FEED_ALBEMARLE,
+  'adelanto_healthcare': process.env.RSS_FEED_ADELANTO_HEALTHCARE,
+  'carlos_zafarini': process.env.RSS_FEED_CARLOS_ZAFARINI,
+  'stubhub': process.env.RSS_FEED_STUBHUB
+};
+
+// Build feed list with entity tags
+const ALL_FEEDS = [];
+
+// Add entity-specific feeds
+for (const [entity, url] of Object.entries(ENTITY_FEEDS)) {
+  if (url && url.trim()) {
+    ALL_FEEDS.push({ url: url.trim(), origin: entity, section: entity.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+  }
+}
+
+// Add legacy RSS_FEEDS with default origin
+for (const url of RSS_FEEDS) {
+  ALL_FEEDS.push({ url, origin: 'google_alerts', section: 'Google Alerts' });
+}
 
 // ---- helpers ----
 function normalizeUrl(u) {
@@ -143,8 +168,8 @@ export default async function handler(req, res) {
     let found = 0, stored = 0, emailed = 0, errors = [];
 
     // Check if RSS feeds are configured
-    if (!RSS_FEEDS.length) {
-      console.log('RSS_FEEDS not configured - skipping RSS collection');
+    if (!ALL_FEEDS.length) {
+      console.log('No RSS feeds configured - skipping RSS collection');
       res.status(200).json({
         ok: true,
         message: "RSS collection disabled - no feeds configured",
@@ -158,10 +183,11 @@ export default async function handler(req, res) {
       return;
     }
 
-    // No keyword filtering - Google Alerts RSS feeds are already AI-specific
-    console.log(`RSS collection starting: ${RSS_FEEDS.length} feeds, no keyword filtering`);
+    // No keyword filtering - RSS feeds are entity-specific
+    console.log(`RSS collection starting: ${ALL_FEEDS.length} feeds (${Object.keys(ENTITY_FEEDS).filter(k => ENTITY_FEEDS[k]).length} entities), no keyword filtering`);
 
-    for (const url of RSS_FEEDS) {
+    for (const feedConfig of ALL_FEEDS) {
+      const { url, origin, section } = feedConfig;
       try {
         const feed = await parser.parseURL(url);
         const feedTitle = feed?.title || url;
@@ -206,12 +232,12 @@ export default async function handler(req, res) {
           const m = {
             id: mid,
             canon,
-            section: "Google Alerts",
+            section: section,
             title: title || "(untitled)",
             link,
             source,
             summary: sum,
-            origin: "google_alerts",
+            origin: origin,
             published_ts: ts,
             published: new Date(ts * 1000).toISOString()
           };
@@ -229,7 +255,7 @@ export default async function handler(req, res) {
         errors.push({ url, error: err?.message || String(err) });
       }
     }
-    res.status(200).json({ ok:true, feeds: RSS_FEEDS.length, found, stored, emailed, errors });
+    res.status(200).json({ ok:true, feeds: ALL_FEEDS.length, found, stored, emailed, errors, entities_configured: Object.keys(ENTITY_FEEDS).filter(k => ENTITY_FEEDS[k]).length });
   } catch (e) {
     res.status(500).json({ ok:false, error:`collect failed: ${e?.message || e}` });
   }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Liz Dashboard</title>
+  <title>Liz's Dashboard</title>
   <style>
     *{box-sizing:border-box}
     body{
@@ -220,8 +220,7 @@
   <header style="background:#4a6741">
     <div style="max-width:1200px;margin:0 auto;padding:20px 32px;display:flex;justify-content:space-between;align-items:center">
       <div>
-        <h1 style="margin:0;font-size:32px;font-weight:700;color:#fff;letter-spacing:-.02em">Liz Dashboard</h1>
-        <p style="margin:2px 0 0 0;font-size:13px;color:rgba(255,255,255,.85)">Legal AI Intelligence</p>
+        <h1 style="margin:0;font-size:32px;font-weight:700;color:#fff;letter-spacing:-.02em">Liz's Dashboard</h1>
       </div>
       <div style="text-align:right">
         <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Last Update</div>
@@ -233,49 +232,47 @@
   <!-- Navigation Bar -->
   <nav class="nav-bar">
     <div class="nav-content">
-      <a href="/meltwater.html" class="nav-item">Meltwater Dashboard</a>
       <a href="/client-summaries.html" class="nav-item">Digest Summaries</a>
-      <a href="https://tmg-policy-pulse.lovable.app/" class="nav-item" target="_blank" rel="noopener">AI Policy Tracker</a>
+      <a href="https://tmg-policy-pulse.lovable.app/" class="nav-item" target="_blank" rel="noopener">Policy Tracker</a>
     </div>
   </nav>
 
   <!-- Summary Bar (Weekly) -->
   <div class="summary-section">
-    <div class="summary-grid" style="grid-template-columns:repeat(5,1fr)">
-      <div class="summary-item active" data-filter="all" onclick="filterByOrigin('all')">
-        <div class="summary-label">Weekly Total</div>
+    <div class="summary-grid" style="grid-template-columns:repeat(7,1fr)">
+      <div class="summary-item active" data-filter="all" onclick="filterByEntity('all')">
+        <div class="summary-label">Total Articles</div>
         <div class="summary-value" id="sb-total">—</div>
+        <div style="font-size:10px;color:#999;margin-top:2px">Past Week</div>
       </div>
-      <div class="summary-item" data-filter="google_alerts" onclick="filterByOrigin('google_alerts')">
-        <div class="summary-label">Google Alerts</div>
-        <div class="summary-value" id="sb-ga">—</div>
+      <div class="summary-item" data-filter="delta_air_lines" onclick="filterByEntity('delta_air_lines')">
+        <div class="summary-label">Delta Air Lines</div>
+        <div class="summary-value" id="sb-delta">—</div>
       </div>
-      <div class="summary-item" data-filter="law360" onclick="filterByOrigin('law360')">
-        <div class="summary-label">Law360</div>
-        <div class="summary-value" id="sb-law360">—</div>
+      <div class="summary-item" data-filter="guardant_health" onclick="filterByEntity('guardant_health')">
+        <div class="summary-label">Guardant Health</div>
+        <div class="summary-value" id="sb-guardant">—</div>
       </div>
-      <div class="summary-item" data-filter="newsletter" onclick="filterByOrigin('newsletter')">
-        <div class="summary-label">RSS Feeds</div>
-        <div class="summary-value" id="sb-newsletter">—</div>
+      <div class="summary-item" data-filter="albemarle" onclick="filterByEntity('albemarle')">
+        <div class="summary-label">Albemarle</div>
+        <div class="summary-value" id="sb-albemarle">—</div>
       </div>
-      <div class="summary-item" data-filter="meltwater" onclick="filterByOrigin('meltwater')">
-        <div class="summary-label">Meltwater</div>
-        <div class="summary-value" id="sb-meltwater">—</div>
+      <div class="summary-item" data-filter="adelanto_healthcare" onclick="filterByEntity('adelanto_healthcare')">
+        <div class="summary-label">Adelanto Healthcare</div>
+        <div class="summary-value" id="sb-adelanto">—</div>
+      </div>
+      <div class="summary-item" data-filter="carlos_zafarini" onclick="filterByEntity('carlos_zafarini')">
+        <div class="summary-label">Carlos Zafarini Jr.</div>
+        <div class="summary-value" id="sb-carlos">—</div>
+      </div>
+      <div class="summary-item" data-filter="stubhub" onclick="filterByEntity('stubhub')">
+        <div class="summary-label">StubHub</div>
+        <div class="summary-value" id="sb-stubhub">—</div>
       </div>
     </div>
   </div>
 
 
-<!-- Active Spikes (Meltwater) -->
-<div class="spike-section" id="spike-section" style="display:none">
-  <h2 class="section-title" style="margin-top:6px">Active Spikes (Today)</h2>
-  <div id="spike-container" class="spike-grid"></div>
-</div>
-  <!-- Sentiment Shift (Meltwater) -->
-<div class="spike-section" id="sent-section" style="display:none;border-color:#90caf9">
-  <h2 class="section-title" style="margin-top:6px">Sentiment Shift (Today)</h2>
-  <div id="sent-container"></div>
-</div>
   <div class="wrap">
     <!-- AI Chat Interface -->
     <div class="chat-container">
@@ -293,7 +290,6 @@
         <button id="summarize-button" class="chat-button" onclick="summarizeWeekly()" style="flex:1;background:#5a7c50;min-width:150px">Summarize Weekly Articles</button>
         <button id="summarize-selected-button" class="chat-button" onclick="summarizeSelected()" style="flex:1;background:#8b7c50;min-width:150px;display:none" title="Summarize selected articles">Summarize Selected (<span id="selected-count">0</span>)</button>
         <button id="client-summary-button" class="chat-button" onclick="generateClientSummary()" style="flex:1;background:#6b8e5f;min-width:150px">Digest Summary</button>
-        <button id="perplexity-button" class="chat-button" onclick="searchPerplexity()" style="flex:1;background:#7c5fa0;min-width:120px" title="Search Perplexity for novel AI updates">Perplexity</button>
         <button id="clear-chat-button" class="chat-button" onclick="clearChat()" style="background:#999;min-width:120px" title="Clear the chat history">Clear Chat</button>
       </div>
 
@@ -578,14 +574,14 @@
       }
     }
 
-    function filterByOrigin(origin){
-      currentFilter = origin;
+    function filterByEntity(entity){
+      currentFilter = entity;
 
       // Update active state on summary items
       document.querySelectorAll('.summary-item').forEach(item => {
         item.classList.remove('active');
       });
-      document.querySelector(`[data-filter="${origin}"]`).classList.add('active');
+      document.querySelector(`[data-filter="${entity}"]`).classList.add('active');
 
       // Reload with filter
       loadMentions();
@@ -1187,23 +1183,23 @@ ${articleText}`;
       if (!res.ok) throw new Error('HTTP '+res.status);
       const data = await res.json();
 
-      // Calculate counts by origin for last 7 days
-      const by = { google_alerts: 0, law360: 0, newsletter: 0, meltwater: 0 };
+      // Calculate counts by entity for last 7 days
+      const by = {
+        delta_air_lines: 0,
+        guardant_health: 0,
+        albemarle: 0,
+        adelanto_healthcare: 0,
+        carlos_zafarini: 0,
+        stubhub: 0
+      };
       const filtered = Array.isArray(data) ? data : [];
 
       for (const m of filtered) {
         let origin = (m.origin || "").toLowerCase();
 
-        // Map newsletter_rss to newsletter for counting
-        if (origin === "newsletter_rss") origin = "newsletter";
-
-        // Map RSS to Google Alerts (RSS articles are part of Google Alerts)
-        if (origin === "rss") origin = "google_alerts";
-
         if (by.hasOwnProperty(origin)) {
           by[origin]++;
         }
-        // Note: No "other" category - only count expected origins
       }
 
       const total = Object.values(by).reduce((a, b) => a + b, 0);
@@ -1212,10 +1208,12 @@ ${articleText}`;
       const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val); };
 
       setText('sb-total',      total);
-      setText('sb-ga',         by.google_alerts || 0);
-      setText('sb-law360',     by.law360 || 0);
-      setText('sb-newsletter', by.newsletter || 0);
-      setText('sb-meltwater',  by.meltwater || 0);
+      setText('sb-delta',      by.delta_air_lines || 0);
+      setText('sb-guardant',   by.guardant_health || 0);
+      setText('sb-albemarle',  by.albemarle || 0);
+      setText('sb-adelanto',   by.adelanto_healthcare || 0);
+      setText('sb-carlos',     by.carlos_zafarini || 0);
+      setText('sb-stubhub',    by.stubhub || 0);
 
     } catch(e) {
       console.error('Error loading summary:', e);
@@ -1415,13 +1413,7 @@ ${articleText}`;
       }
 
       // Refresh counts
-      updateMeltwaterCount();
-    } else if (data.type === 'count_update') {
-      // Update Meltwater count directly
-      const meltwaterEl = document.getElementById('sb-mw');
-      if (meltwaterEl && data.meltwater_count !== undefined) {
-        animateCountUpdate(meltwaterEl, data.meltwater_count);
-      }
+      // Removed Meltwater-specific count updates
     }
   }
 
@@ -1535,26 +1527,6 @@ ${articleText}`;
     updateNumber();
   }
 
-  async function updateMeltwaterCount() {
-    try {
-      const res = await fetch('/api/summary?window=today', { cache: 'no-store' });
-      const data = await res.json();
-      if (data?.ok && data.totals?.by_origin?.meltwater !== undefined) {
-        const meltwaterEl = document.getElementById('sb-mw');
-        if (meltwaterEl) {
-          animateCountUpdate(meltwaterEl, data.totals.by_origin.meltwater);
-        }
-
-        // Update total
-        const totalEl = document.getElementById('sb-total');
-        if (totalEl && data.totals?.all !== undefined) {
-          animateCountUpdate(totalEl, data.totals.all);
-        }
-      }
-    } catch (error) {
-      console.error('Error updating counts:', error);
-    }
-  }
 
   // Add CSS for animations
   const style = document.createElement('style');
