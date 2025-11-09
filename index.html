@@ -912,25 +912,31 @@
       response.style.display = 'none';
       saveSection.style.display = 'none';
 
-      const prompt = `Create a professional client summary for the following article. The article text includes the headline. Follow this exact format:
+      const prompt = `You are a professional news summarizer creating Daily News Clips for The Messina Group. Your task is to summarize news articles following these exact formatting and style guidelines:
 
-[Article Title]
-Summary: [2-4 sentences covering the key points]
+FORMAT REQUIREMENTS:
+- Start each summary with the headline in bold followed by the source in brackets: **Headline [Source]**
+- Begin the summary text with >>> on a new line
+- Keep summaries concise: 2-4 paragraphs maximum
+- Include direct quotes when they add value or context
+- Maintain a neutral, factual tone
+- Focus on the most newsworthy elements: what happened, who was involved, key implications
 
-Guidelines:
-- Extract the article title from the first line or headline of the pasted text
-- Start the summary with "Summary: "
-- Write 2-4 sentences (typically 3-4)
-- Use professional, factual, neutral tone
-- First sentence: What happened/was announced and when (include specific date if mentioned)
-- Middle sentences: Key details, context, implications
-- Last sentence (if needed): Additional context or reactions
-- Include specific names, titles, roles when mentioned
-- Focus on actionable facts and key developments
-- Include relevant policy/legislative details
-- Note reactions from stakeholders when significant
+CONTENT GUIDELINES:
+- Lead with the most important information (inverted pyramid style)
+- Include specific names, numbers, dates, and locations when relevant
+- Attribute information properly (e.g., "according to court filings," "the official said")
+- Explain why the story matters or what happens next when applicable
+- Avoid editorializing or adding opinion
 
-Full Article Text (including headline):
+STYLE REQUIREMENTS:
+- Write in clear, professional language
+- Use active voice when possible
+- Keep sentences concise and readable
+- Avoid jargon unless necessary (and explain it if used)
+- Maintain consistency in tone across all summaries
+
+Please summarize the following article:
 ${articleText}`;
 
       try {
