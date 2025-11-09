@@ -447,6 +447,7 @@
         'nyt_top_news_rss',
         'wapo_national_news_rss',
         'wapo_politics_rss',
+        'politico_rss',
         'wapo_local_rss'
       ];
       return prioritySources.includes((origin || '').toLowerCase());
@@ -557,7 +558,7 @@
           };
 
           // Determine if this is a client feed
-          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
           const localNewsOrigins = ['wapo_local_rss'];
           const origin = (article.origin || "").toLowerCase();
           const isClientFeed = !topNewsOrigins.includes(origin) && !localNewsOrigins.includes(origin) && origin;
@@ -653,14 +654,14 @@
 
         // Apply entity/category filter
         if (currentFilter === 'top_news') {
-          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
           filtered = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase()));
         } else if (currentFilter === 'local_news') {
           const localNewsOrigins = ['wapo_local_rss'];
           filtered = filtered.filter(m => localNewsOrigins.includes((m.origin || "").toLowerCase()));
         } else if (currentFilter === 'clients') {
           // Filter for client feeds (everything except top news and local news)
-          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
           const localNewsOrigins = ['wapo_local_rss'];
           const allGeneralNews = [...topNewsOrigins, ...localNewsOrigins];
           filtered = filtered.filter(m => !allGeneralNews.includes((m.origin || "").toLowerCase()));
@@ -1373,7 +1374,7 @@ ${articleText}`;
       const origins = [...new Set(last24h.map(m => (m.origin || "").toLowerCase()))];
 
       // Categorize feeds
-      const generalNews = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+      const generalNews = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
       const localNews = ['wapo_local_rss'];
 
       // Clear existing options
@@ -1460,7 +1461,7 @@ ${articleText}`;
       }) : [];
 
       // Calculate counts
-      const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+      const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
       const localNewsOrigins = ['wapo_local_rss'];
 
       let topNewsCount = 0;

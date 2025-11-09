@@ -63,6 +63,7 @@ const ENTITY_FEEDS = {
   'nyt_top_news_rss': process.env.NYT_TOP_NEWS_RSS,
   'wapo_national_news_rss': process.env.WAPO_NATIONAL_NEWS_RSS,
   'wapo_politics_rss': process.env.WAPO_POLITICS_RSS,
+  'politico_rss': process.env.POLITICO_RSS,
   'wapo_local_rss': process.env.WAPO_LOCAL_RSS,
 
   // Client RSS Feeds
