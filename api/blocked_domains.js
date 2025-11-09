@@ -17,9 +17,17 @@ export const BLOCKED_DOMAINS = [
   'mercedsunstar.com',
   'myheraldreview.com',
 
-  // Yahoo aggregators (content farms)
+  // Yahoo aggregators (content farms / reposters)
   'finance.yahoo.com',
   'yahoo.com',
+  'sports.yahoo.com',
+  'news.yahoo.com',
+
+  // MSN and other major content aggregators/reposters
+  'msn.com',
+  'news.msn.com',
+  'aol.com',
+  'news.aol.com',
 
   // Generic content farms and low-quality aggregators
   'newsbreak.com',

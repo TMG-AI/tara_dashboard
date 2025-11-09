@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 import Parser from "rss-parser";
 import { isBlockedDomain, extractDomain } from "./blocked_domains.js";
 import { isInternationalArticle, getBlockReason } from "./international_filter.js";
+import { isStockPriceFocused, isOpinionPiece } from "./content_filters.js";
 
 const redis = new Redis({
   url: process.env.KV3_REST_API_URL,
@@ -193,6 +194,20 @@ export default async function handler(req, res) {
           // Filter out international articles
           if (isInternationalArticle(title, sum, link, feedTitle)) {
             console.log(`[Newsletter RSS] Skipping international: "${title}" - ${getBlockReason(title, sum, link, feedTitle)}`);
+            skipped++;
+            continue;
+          }
+
+          // Filter out stock price focused articles
+          if (isStockPriceFocused(title, sum, feedTitle)) {
+            console.log(`[Newsletter RSS] Skipping stock-focused: "${title}"`);
+            skipped++;
+            continue;
+          }
+
+          // Filter out opinion pieces
+          if (isOpinionPiece(title, sum, feedTitle, link)) {
+            console.log(`[Newsletter RSS] Skipping opinion piece: "${title}"`);
             skipped++;
             continue;
           }

@@ -1,6 +1,7 @@
 // /api/meltwater_collect.js
 // Collects articles from Meltwater API for searchid 27864701 (AI Digest for Lawyers)
 import { Redis } from "@upstash/redis";
+import { isStockPriceFocused, isOpinionPiece } from "./content_filters.js";
 
 const redis = new Redis({
   url: process.env.KV3_REST_API_URL,
@@ -221,6 +222,20 @@ export default async function handler(req, res) {
         // Filter out press releases
         if (isPressRelease(title, extractedSummary, source)) {
           console.log(`[Meltwater] Skipping press release: "${title}" from ${source}`);
+          skipped++;
+          continue;
+        }
+
+        // Filter out stock price focused articles
+        if (isStockPriceFocused(title, extractedSummary, source)) {
+          console.log(`[Meltwater] Skipping stock-focused: "${title}"`);
+          skipped++;
+          continue;
+        }
+
+        // Filter out opinion pieces
+        if (isOpinionPiece(title, extractedSummary, source, link)) {
+          console.log(`[Meltwater] Skipping opinion piece: "${title}"`);
           skipped++;
           continue;
         }

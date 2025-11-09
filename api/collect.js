@@ -3,6 +3,7 @@ import Parser from "rss-parser";
 import { Resend } from "resend";
 import { isBlockedDomain, extractDomain } from "./blocked_domains.js";
 import { isInternationalArticle, getBlockReason } from "./international_filter.js";
+import { shouldFilterArticle, isStockPriceFocused, isOpinionPiece } from "./content_filters.js";
 
 // ---- clients ----
 const redis = new Redis({
@@ -221,72 +222,8 @@ async function sendEmail(m){
   });
 }
 
-// Entity-specific content filters
-function shouldFilterArticle(origin, title, summary) {
-  const text = `${title} ${summary}`.toLowerCase();
-
-  // Delta Air Lines: Exclude airplane incidents and new travel routes
-  if (origin === 'delta_air_lines') {
-    const incidentKeywords = [
-      'incident', 'crash', 'emergency', 'accident', 'diverted', 'grounded',
-      'delayed', 'cancellation', 'mechanical issue', 'safety concern',
-      'investigation', 'turbulence', 'forced landing'
-    ];
-    const routeKeywords = [
-      'new route', 'adds service', 'launches flight', 'new destination',
-      'expands service', 'adds flight', 'inaugural flight', 'direct flight to',
-      'nonstop service', 'new nonstop'
-    ];
-
-    const hasIncident = incidentKeywords.some(keyword => text.includes(keyword));
-    const hasRoute = routeKeywords.some(keyword => text.includes(keyword));
-
-    if (hasIncident || hasRoute) {
-      return true; // Filter out
-    }
-  }
-
-  // Guardant Health: Accept all news
-  if (origin === 'guardant_health') {
-    return false; // Accept all
-  }
-
-  // Albemarle: Only news about Albemarle Corporation
-  if (origin === 'albemarle') {
-    // Must mention corporation/corp/company to be about the business
-    const isCorporation = text.includes('corporation') ||
-                         text.includes('corp') ||
-                         text.includes('company') ||
-                         text.includes('albemarle corp') ||
-                         text.includes('alb') || // Stock ticker
-                         text.includes('lithium') || // Their main business
-                         text.includes('chemical');
-
-    if (!isCorporation) {
-      return true; // Filter out non-corporate Albemarle news
-    }
-  }
-
-  // StubHub: Exclude articles about how to get/buy tickets
-  if (origin === 'stubhub') {
-    const ticketBuyingKeywords = [
-      'how to get tickets', 'how to buy', 'where to buy tickets',
-      'ticket guide', 'buying guide', 'purchase tickets',
-      'get your tickets', 'buy tickets', 'tickets available',
-      'on sale now', 'tickets on sale', 'cheapest tickets',
-      'best way to get', 'how to find tickets'
-    ];
-
-    const isTicketBuying = ticketBuyingKeywords.some(keyword => text.includes(keyword));
-
-    if (isTicketBuying) {
-      return true; // Filter out ticket-buying guides
-    }
-  }
-
-  // All other entities: accept all
-  return false;
-}
+// Entity-specific content filters are now in content_filters.js
+// Imported at top of file
 
 // ---- handler ----
 export default async function handler(req, res) {
@@ -343,8 +280,8 @@ export default async function handler(req, res) {
             continue;
           }
 
-          // Apply entity-specific filters
-          if (shouldFilterArticle(origin, title, sum)) {
+          // Apply entity-specific and content quality filters
+          if (shouldFilterArticle(origin, title, sum, source, link)) {
             console.log(`Skipping filtered article for ${origin}: "${title}"`);
             continue;
           }
