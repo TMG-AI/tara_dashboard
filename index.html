@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Liz's Dashboard</title>
+  <title>Daily News Dashboard</title>
   <style>
     *{box-sizing:border-box}
     body{
@@ -220,7 +220,7 @@
   <header style="background:#4a6741">
     <div style="max-width:1200px;margin:0 auto;padding:20px 32px;display:flex;justify-content:space-between;align-items:center">
       <div>
-        <h1 style="margin:0;font-size:32px;font-weight:700;color:#fff;letter-spacing:-.02em">Liz's Dashboard</h1>
+        <h1 style="margin:0;font-size:32px;font-weight:700;color:#fff;letter-spacing:-.02em">Daily News Dashboard</h1>
       </div>
       <div style="text-align:right">
         <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Last Update</div>
@@ -230,37 +230,23 @@
   </header>
 
 
-  <!-- Summary Bar (Weekly) -->
+  <!-- Summary Bar (24 Hours) -->
   <div class="summary-section">
-    <div class="summary-grid" style="grid-template-columns:repeat(7,1fr)">
+    <div class="summary-grid" style="grid-template-columns:repeat(3,1fr)">
       <div class="summary-item active" data-filter="all" onclick="filterByEntity('all')">
         <div class="summary-label">Total Articles</div>
         <div class="summary-value" id="sb-total">—</div>
-        <div style="font-size:10px;color:#999;margin-top:2px">Past Week</div>
+        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
       </div>
-      <div class="summary-item" data-filter="adelanto_healthcare" onclick="filterByEntity('adelanto_healthcare')">
-        <div class="summary-label">Adelanto</div>
-        <div class="summary-value" id="sb-adelanto">—</div>
+      <div class="summary-item" data-filter="top_news" onclick="filterByEntity('top_news')">
+        <div class="summary-label">Top News</div>
+        <div class="summary-value" id="sb-top-news">—</div>
+        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
       </div>
-      <div class="summary-item" data-filter="albemarle" onclick="filterByEntity('albemarle')">
-        <div class="summary-label">Albemarle</div>
-        <div class="summary-value" id="sb-albemarle">—</div>
-      </div>
-      <div class="summary-item" data-filter="delta_air_lines" onclick="filterByEntity('delta_air_lines')">
-        <div class="summary-label">Delta</div>
-        <div class="summary-value" id="sb-delta">—</div>
-      </div>
-      <div class="summary-item" data-filter="guardant_health" onclick="filterByEntity('guardant_health')">
-        <div class="summary-label">Guardant</div>
-        <div class="summary-value" id="sb-guardant">—</div>
-      </div>
-      <div class="summary-item" data-filter="stubhub" onclick="filterByEntity('stubhub')">
-        <div class="summary-label">StubHub</div>
-        <div class="summary-value" id="sb-stubhub">—</div>
-      </div>
-      <div class="summary-item" data-filter="carlos_zafarini" onclick="filterByEntity('carlos_zafarini')">
-        <div class="summary-label">Zafarini</div>
-        <div class="summary-value" id="sb-carlos">—</div>
+      <div class="summary-item" data-filter="local_news" onclick="filterByEntity('local_news')">
+        <div class="summary-label">Local News</div>
+        <div class="summary-value" id="sb-local-news">—</div>
+        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
       </div>
     </div>
   </div>
@@ -304,6 +290,16 @@
       <div class="filter-section">
         <label for="search" style="font-size:13px;font-weight:600;color:#666">Search</label>
         <input id="search" placeholder="Filter title…" style="min-width:200px"/>
+      </div>
+
+      <div class="filter-section">
+        <label for="feed-filter" style="font-weight:600;font-size:14px;color:#333">Filter by Feed:</label>
+        <select id="feed-filter" class="filter-input" onchange="filterByFeed(this.value)" style="min-width:250px">
+          <option value="all">All Feeds</option>
+          <optgroup label="General News" id="feed-general"></optgroup>
+          <optgroup label="Local News" id="feed-local"></optgroup>
+          <optgroup label="Client Feeds" id="feed-clients"></optgroup>
+        </select>
       </div>
 
       <div class="filter-section">
@@ -495,15 +491,31 @@
         // Store all mentions for filtering
         allMentions = Array.isArray(data) ? data : [];
 
+        // Populate feed dropdown with available feeds
+        populateFeedDropdown();
+
         // Apply current filter
         let filtered = allMentions;
-        if (currentFilter !== 'all') {
+
+        // Filter by date (last 24 hours only)
+        const now = Date.now();
+        const oneDayAgo = now - (24 * 60 * 60 * 1000);
+        filtered = filtered.filter(m => {
+          const ts = new Date(m.published).getTime();
+          return ts >= oneDayAgo;
+        });
+
+        // Apply entity/category filter
+        if (currentFilter === 'top_news') {
+          const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+          filtered = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase()));
+        } else if (currentFilter === 'local_news') {
+          const localNewsOrigins = ['wapo_local_rss'];
+          filtered = filtered.filter(m => localNewsOrigins.includes((m.origin || "").toLowerCase()));
+        } else if (currentFilter !== 'all') {
+          // Handle RSS feed filter from dropdown
           filtered = filtered.filter(m => {
-            const origin = (m.origin || '').toLowerCase();
-            // Handle both "newsletter" and "newsletter_rss" when filtering by newsletter
-            if (currentFilter === 'newsletter') {
-              return origin === 'newsletter' || origin === 'newsletter_rss';
-            }
+            let origin = (m.origin || "").toLowerCase();
             return origin === currentFilter;
           });
         }
@@ -1163,6 +1175,54 @@ ${articleText}`;
       }
     }
 
+    function populateFeedDropdown() {
+      // Filter to last 24 hours
+      const now = Date.now();
+      const oneDayAgo = now - (24 * 60 * 60 * 1000);
+      const last24h = allMentions.filter(m => {
+        const ts = new Date(m.published).getTime();
+        return ts >= oneDayAgo;
+      });
+
+      // Get unique origins
+      const origins = [...new Set(last24h.map(m => (m.origin || "").toLowerCase()))];
+
+      // Categorize feeds
+      const generalNews = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+      const localNews = ['wapo_local_rss'];
+
+      // Clear existing options
+      document.getElementById('feed-general').innerHTML = '';
+      document.getElementById('feed-local').innerHTML = '';
+      document.getElementById('feed-clients').innerHTML = '';
+
+      // Populate dropdowns
+      origins.forEach(origin => {
+        const displayName = origin.replace(/_rss$/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const option = `<option value="${origin}">${displayName}</option>`;
+
+        if (generalNews.includes(origin)) {
+          document.getElementById('feed-general').innerHTML += option;
+        } else if (localNews.includes(origin)) {
+          document.getElementById('feed-local').innerHTML += option;
+        } else {
+          document.getElementById('feed-clients').innerHTML += option;
+        }
+      });
+    }
+
+    function filterByFeed(feed) {
+      currentFilter = feed;
+      // Reset active state on summary items
+      document.querySelectorAll('.summary-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      if (feed === 'all') {
+        document.querySelector('[data-filter="all"]').classList.add('active');
+      }
+      loadMentions();
+    }
+
     // Initialize
     loadMentions();
   </script>
@@ -1171,42 +1231,44 @@ ${articleText}`;
   <script>
   (async function(){
     try{
-      // Fetch data from last 7 days
+      // Fetch data from last 24 hours
       const res = await fetch('/api/get_mentions?limit=10000', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP '+res.status);
       const data = await res.json();
 
-      // Calculate counts by entity for last 7 days
-      const by = {
-        delta_air_lines: 0,
-        guardant_health: 0,
-        albemarle: 0,
-        adelanto_healthcare: 0,
-        carlos_zafarini: 0,
-        stubhub: 0
-      };
-      const filtered = Array.isArray(data) ? data : [];
+      // Filter to last 24 hours only
+      const now = Date.now();
+      const oneDayAgo = now - (24 * 60 * 60 * 1000);
+      const filtered = Array.isArray(data) ? data.filter(m => {
+        const ts = new Date(m.published).getTime();
+        return ts >= oneDayAgo;
+      }) : [];
+
+      // Calculate counts
+      const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss'];
+      const localNewsOrigins = ['wapo_local_rss'];
+
+      let topNewsCount = 0;
+      let localNewsCount = 0;
 
       for (const m of filtered) {
         let origin = (m.origin || "").toLowerCase();
-
-        if (by.hasOwnProperty(origin)) {
-          by[origin]++;
+        if (topNewsOrigins.includes(origin)) {
+          topNewsCount++;
+        }
+        if (localNewsOrigins.includes(origin)) {
+          localNewsCount++;
         }
       }
 
-      const total = Object.values(by).reduce((a, b) => a + b, 0);
+      const total = filtered.length;
 
       const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) && n.toLocaleString) ? n.toLocaleString() : (n ?? '0');
       const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val); };
 
-      setText('sb-total',      total);
-      setText('sb-delta',      by.delta_air_lines || 0);
-      setText('sb-guardant',   by.guardant_health || 0);
-      setText('sb-albemarle',  by.albemarle || 0);
-      setText('sb-adelanto',   by.adelanto_healthcare || 0);
-      setText('sb-carlos',     by.carlos_zafarini || 0);
-      setText('sb-stubhub',    by.stubhub || 0);
+      setText('sb-total', total);
+      setText('sb-top-news', topNewsCount);
+      setText('sb-local-news', localNewsCount);
 
     } catch(e) {
       console.error('Error loading summary:', e);
