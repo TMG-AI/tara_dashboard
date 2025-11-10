@@ -38,20 +38,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const ZSET = "mentions:z";
 const SEEN_ID = "mentions:seen";
 const SEEN_LINK = "mentions:seen:canon";
-
-// Dynamic retention: 24 hours on weekdays, 72 hours on weekends
-function getRetentionHours() {
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
-
-  // Weekend (Friday evening through Sunday): keep 72 hours
-  if (dayOfWeek === 0 || dayOfWeek === 6) {
-    return 72; // Saturday & Sunday: 3 days
-  }
-
-  // Weekdays: keep 24 hours
-  return 24;
-}
+const RETENTION_HOURS = 24; // Keep articles for 24 hours only
 
 // ---- config ----
 // Support both old RSS_FEEDS variable and new entity-specific feeds
@@ -432,9 +419,8 @@ export default async function handler(req, res) {
           if (ENABLE_SENTIMENT) m.sentiment = sentimentScore(`${title} ${sum}`);
           await redis.zadd(ZSET, { score: ts, member: JSON.stringify(m) });
 
-          // Trim articles based on retention policy (24h weekdays, 72h weekends)
-          const retentionHours = getRetentionHours();
-          const cutoffTimestamp = Math.floor(Date.now() / 1000) - (retentionHours * 60 * 60);
+          // Trim articles older than 24 hours
+          const cutoffTimestamp = Math.floor(Date.now() / 1000) - (RETENTION_HOURS * 60 * 60);
           await redis.zremrangebyscore(ZSET, '-inf', cutoffTimestamp);
 
           found++; stored++;

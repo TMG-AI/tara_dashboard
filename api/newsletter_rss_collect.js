@@ -34,7 +34,7 @@ const parser = new Parser({
 const ZSET = "mentions:z";
 const SEEN_ID = "mentions:seen";
 const SEEN_LINK = "mentions:seen:canon";
-const RETENTION_DAYS = 14; // Keep articles for 14 days
+const RETENTION_HOURS = 24; // Keep articles for 24 hours only
 
 // Newsletter-specific keywords (AI focus only)
 const AI_KEYWORDS = [
@@ -269,8 +269,8 @@ export default async function handler(req, res) {
 
           await redis.zadd(ZSET, { score: ts, member: JSON.stringify(m) });
 
-          // Trim articles older than RETENTION_DAYS
-          const cutoffTimestamp = Math.floor(Date.now() / 1000) - (RETENTION_DAYS * 24 * 60 * 60);
+          // Trim articles older than 24 hours
+          const cutoffTimestamp = Math.floor(Date.now() / 1000) - (RETENTION_HOURS * 60 * 60);
           await redis.zremrangebyscore(ZSET, '-inf', cutoffTimestamp);
 
           stored++;
