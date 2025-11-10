@@ -456,9 +456,10 @@
     function deduplicateStories(articles) {
       if (!articles || articles.length === 0) return articles;
 
-      const SIMILARITY_THRESHOLD = 0.4; // 40% keyword overlap = same story
+      const SIMILARITY_THRESHOLD = 0.3; // 30% keyword overlap = same story
       const groups = [];
       const processed = new Set();
+      const duplicatesFound = [];
 
       // Group similar articles
       for (let i = 0; i < articles.length; i++) {
@@ -494,19 +495,42 @@
         // Multiple similar articles - select the best one
         const groupArticles = group.map(idx => articles[idx]);
 
-        // First, try to find WaPo or NYT article
+        // First, try to find WaPo or NYT or POLITICO article
         const priorityArticle = groupArticles.find(a => isPrioritySource(a.origin));
 
         if (priorityArticle) {
           selectedArticles.push(priorityArticle);
+          // Log which duplicates were removed
+          const removed = groupArticles.filter(a => a !== priorityArticle);
+          removed.forEach(a => {
+            duplicatesFound.push({
+              kept: priorityArticle.title.substring(0, 60),
+              removed: a.title.substring(0, 60),
+              keptSource: priorityArticle.source || priorityArticle.origin,
+              removedSource: a.source || a.origin
+            });
+          });
         } else {
           // No priority source, keep the earliest published
           groupArticles.sort((a, b) => new Date(a.published) - new Date(b.published));
           selectedArticles.push(groupArticles[0]);
+          // Log which duplicates were removed
+          const removed = groupArticles.slice(1);
+          removed.forEach(a => {
+            duplicatesFound.push({
+              kept: groupArticles[0].title.substring(0, 60),
+              removed: a.title.substring(0, 60),
+              keptSource: groupArticles[0].source || groupArticles[0].origin,
+              removedSource: a.source || a.origin
+            });
+          });
         }
       }
 
-      console.log(`[Deduplication] ${articles.length} articles → ${selectedArticles.length} unique stories`);
+      console.log(`[Deduplication] ${articles.length} articles → ${selectedArticles.length} unique stories (removed ${duplicatesFound.length} duplicates)`);
+      if (duplicatesFound.length > 0) {
+        console.log('[Deduplication] Removed duplicates:', duplicatesFound);
+      }
 
       return selectedArticles;
     }
@@ -1398,6 +1422,13 @@ ${articleText}`;
       const localOrigins = origins.filter(o => localNews.includes(o));
       const clientOrigins = origins.filter(o => !generalNews.includes(o) && !localNews.includes(o));
 
+      // Sort general news feeds alphabetically
+      generalOrigins.sort((a, b) => {
+        const nameA = formatDisplayName(a);
+        const nameB = formatDisplayName(b);
+        return nameA.localeCompare(nameB);
+      });
+
       // Sort client feeds alphabetically
       clientOrigins.sort((a, b) => {
         const nameA = formatDisplayName(a);
@@ -1405,7 +1436,7 @@ ${articleText}`;
         return nameA.localeCompare(nameB);
       });
 
-      // Populate general news dropdown
+      // Populate general news dropdown (alphabetically sorted)
       generalOrigins.forEach(origin => {
         const displayName = formatDisplayName(origin);
         const option = `<option value="${origin}">${displayName}</option>`;
