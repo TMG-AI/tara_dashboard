@@ -62,30 +62,56 @@
       font-weight:600
     }
 
-    /* Summary Bar */
-    .summary-section{
-      background:#fff;margin:20px auto;max-width:1200px;border-radius:16px;
-      box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(139,195,74,.12);overflow:hidden
-    }
-    .summary-grid{
-      display:grid;grid-template-columns:repeat(6,1fr);gap:20px;background:transparent;padding:20px
-    }
-    .summary-item{
-      background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);
-      border:1px solid rgba(139,195,74,.12);transition:.3s;text-align:center;cursor:pointer
-    }
-    .summary-item:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:rgba(139,195,74,.25)}
-    .summary-item.active{border:2px solid #4a6741;background:rgba(139,195,74,.05)}
-    .summary-label{color:#333;font-size:15px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;min-height:40px;display:flex;align-items:flex-end;justify-content:center}
-    .summary-value{font-size:32px;font-weight:700;color:#4a6741;margin:0}
-
     /* Client Filter Cards */
     .client-cards-section{
       background:#fff;margin:20px auto;max-width:1200px;border-radius:16px;
       box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(139,195,74,.12);overflow:hidden;padding:24px
     }
     .client-cards-container{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px
+      display:grid;grid-template-columns:repeat(6,1fr);gap:16px
+    }
+    /* Category Cards (Top News & Newsletters) */
+    .category-cards-section{
+      background:#fff;margin:20px auto;max-width:600px;border-radius:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(139,195,74,.12);overflow:hidden;padding:24px
+    }
+    .category-cards-container{
+      display:grid;grid-template-columns:repeat(2,1fr);gap:16px
+    }
+    .category-card{
+      background:linear-gradient(135deg,#fff,#fafbfc);
+      border-radius:12px;padding:24px;
+      box-shadow:0 2px 8px rgba(0,0,0,.05);
+      border:2px solid rgba(139,195,74,.12);
+      transition:.3s;cursor:pointer;
+      text-align:center;
+      position:relative;
+      overflow:hidden
+    }
+    .category-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,#8bc34a,#7cb342);
+      opacity:0;transition:.3s
+    }
+    .category-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 8px 20px rgba(0,0,0,.12);
+      border-color:rgba(139,195,74,.4)
+    }
+    .category-card:hover::before{opacity:1}
+    .category-card.active{
+      border:2px solid #4a6741;
+      background:linear-gradient(135deg,rgba(139,195,74,.08),rgba(139,195,74,.12));
+      box-shadow:0 4px 16px rgba(74,103,65,.2)
+    }
+    .category-card.active::before{opacity:1}
+    .category-card-name{
+      font-size:15px;font-weight:600;color:#333;
+      margin-bottom:8px;letter-spacing:-.01em
+    }
+    .category-card-count{
+      font-size:24px;font-weight:700;color:#4a6741;
+      margin-top:4px
     }
     .client-card{
       background:linear-gradient(135deg,#fff,#fafbfc);
@@ -274,39 +300,9 @@
   </header>
 
 
-  <!-- Summary Bar (24 Hours) -->
-  <div class="summary-section">
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr)">
-      <div class="summary-item active" data-filter="all" onclick="filterByEntity('all')">
-        <div class="summary-label">Total Articles</div>
-        <div class="summary-value" id="sb-total">—</div>
-        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
-      </div>
-      <div class="summary-item" data-filter="clients" onclick="filterByEntity('clients')">
-        <div class="summary-label">Clients</div>
-        <div class="summary-value" id="sb-clients">—</div>
-        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
-      </div>
-      <div class="summary-item" data-filter="top_news" onclick="filterByEntity('top_news')">
-        <div class="summary-label">Top News</div>
-        <div class="summary-value" id="sb-top-news">—</div>
-        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
-      </div>
-      <div class="summary-item" data-filter="local_news" onclick="filterByEntity('local_news')">
-        <div class="summary-label">Local News</div>
-        <div class="summary-value" id="sb-local-news">—</div>
-        <div style="font-size:10px;color:#999;margin-top:2px">Past 24 Hours</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Client Filter Cards -->
+  <!-- Client Filter Cards (Alphabetical) -->
   <div class="client-cards-section">
     <div class="client-cards-container">
-      <div class="client-card" data-client="waymo_rss" onclick="filterByClient('waymo_rss')">
-        <div class="client-card-name">Waymo</div>
-        <div class="client-card-count" id="client-waymo">—</div>
-      </div>
       <div class="client-card" data-client="delta_air_lines_rss" onclick="filterByClient('delta_air_lines_rss')">
         <div class="client-card-name">Delta Air Lines</div>
         <div class="client-card-count" id="client-delta">—</div>
@@ -326,6 +322,24 @@
       <div class="client-card" data-client="us_soccer_foundation_rss" onclick="filterByClient('us_soccer_foundation_rss')">
         <div class="client-card-name">U.S. Soccer</div>
         <div class="client-card-count" id="client-ussoccer">—</div>
+      </div>
+      <div class="client-card" data-client="waymo_rss" onclick="filterByClient('waymo_rss')">
+        <div class="client-card-name">Waymo</div>
+        <div class="client-card-count" id="client-waymo">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Cards (Centered Below) -->
+  <div class="category-cards-section">
+    <div class="category-cards-container">
+      <div class="category-card" data-filter="top_news" onclick="filterByEntity('top_news')">
+        <div class="category-card-name">Top News</div>
+        <div class="category-card-count" id="sb-top-news">—</div>
+      </div>
+      <div class="category-card" data-filter="newsletters" onclick="filterByEntity('newsletters')">
+        <div class="category-card-name">Newsletters</div>
+        <div class="category-card-count" id="sb-newsletters">—</div>
       </div>
     </div>
   </div>
@@ -719,14 +733,14 @@
         if (currentFilter === 'top_news') {
           const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
           filtered = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase()));
-        } else if (currentFilter === 'local_news') {
-          const localNewsOrigins = ['wapo_local_rss'];
-          filtered = filtered.filter(m => localNewsOrigins.includes((m.origin || "").toLowerCase()));
+        } else if (currentFilter === 'newsletters') {
+          const newsletterOrigins = ['newsletter_rss_collect'];
+          filtered = filtered.filter(m => newsletterOrigins.includes((m.origin || "").toLowerCase()));
         } else if (currentFilter === 'clients') {
-          // Filter for client feeds (everything except top news and local news)
+          // Filter for client feeds (everything except top news and newsletters)
           const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
-          const localNewsOrigins = ['wapo_local_rss'];
-          const allGeneralNews = [...topNewsOrigins, ...localNewsOrigins];
+          const newsletterOrigins = ['newsletter_rss_collect'];
+          const allGeneralNews = [...topNewsOrigins, ...newsletterOrigins];
           filtered = filtered.filter(m => !allGeneralNews.includes((m.origin || "").toLowerCase()));
 
           // If a specific client is selected, filter further
@@ -790,11 +804,12 @@
       currentFilter = entity;
       currentClientFilter = null; // Clear client filter when using entity filter
 
-      // Update active state on summary items
-      document.querySelectorAll('.summary-item').forEach(item => {
+      // Update active state on category cards
+      document.querySelectorAll('.category-card').forEach(item => {
         item.classList.remove('active');
       });
-      document.querySelector(`[data-filter="${entity}"]`).classList.add('active');
+      const categoryCard = document.querySelector(`.category-card[data-filter="${entity}"]`);
+      if (categoryCard) categoryCard.classList.add('active');
 
       // Clear client card active states
       document.querySelectorAll('.client-card').forEach(card => {
@@ -816,12 +831,10 @@
       const activeCard = document.querySelector(`[data-client="${clientOrigin}"]`);
       if (activeCard) activeCard.classList.add('active');
 
-      // Update summary items to show 'clients' as active
-      document.querySelectorAll('.summary-item').forEach(item => {
-        item.classList.remove('active');
+      // Clear category card active states
+      document.querySelectorAll('.category-card').forEach(card => {
+        card.classList.remove('active');
       });
-      const clientsItem = document.querySelector(`[data-filter="clients"]`);
-      if (clientsItem) clientsItem.classList.add('active');
 
       // Reload with filter
       loadMentions();
@@ -891,23 +904,16 @@
 
         // Calculate counts
         const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
-        const localNewsOrigins = ['wapo_local_rss'];
+        const newsletterOrigins = ['newsletter_rss_collect'];
 
         const topNewsCount = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase())).length;
-        const localNewsCount = filtered.filter(m => localNewsOrigins.includes((m.origin || "").toLowerCase())).length;
-        const clientsCount = filtered.filter(m => {
-          const origin = (m.origin || "").toLowerCase();
-          return !topNewsOrigins.includes(origin) && !localNewsOrigins.includes(origin) && origin;
-        }).length;
-        const total = topNewsCount + localNewsCount + clientsCount;
+        const newslettersCount = filtered.filter(m => newsletterOrigins.includes((m.origin || "").toLowerCase())).length;
 
         const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) && n.toLocaleString) ? n.toLocaleString() : (n ?? '0');
         const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val); };
 
-        setText('sb-total', total);
-        setText('sb-clients', clientsCount);
         setText('sb-top-news', topNewsCount);
-        setText('sb-local-news', localNewsCount);
+        setText('sb-newsletters', newslettersCount);
 
         // Calculate individual client counts
         const waymoCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'waymo_rss').length;
@@ -1528,13 +1534,13 @@ ${articleText}`;
 
     function filterByFeed(feed) {
       currentFilter = feed;
-      // Reset active state on summary items
-      document.querySelectorAll('.summary-item').forEach(item => {
+      // Reset active state on category cards and client cards
+      document.querySelectorAll('.category-card').forEach(item => {
         item.classList.remove('active');
       });
-      if (feed === 'all') {
-        document.querySelector('[data-filter="all"]').classList.add('active');
-      }
+      document.querySelectorAll('.client-card').forEach(item => {
+        item.classList.remove('active');
+      });
       loadMentions();
     }
 
