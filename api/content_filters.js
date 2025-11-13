@@ -257,6 +257,45 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     }
   }
 
+  // Front Financial Mesh: Must be about Mesh the fintech company (not mesh fabric/products)
+  if (origin === 'front_financial_mesh_rss') {
+    // Product/material false positives to exclude
+    const productKeywords = [
+      'mesh fabric', 'mesh material', 'mesh shoes', 'mesh sneakers',
+      'mesh upper', 'mesh panel', 'mesh construction',
+      'mesh pocket', 'mesh bag', 'mesh case', 'mesh cover',
+      'wire mesh', 'screen mesh', 'mesh filter', 'mesh guard',
+      'mesh design', 'breathable mesh', 'lightweight mesh',
+      'restaurant', 'menu', 'dining', 'chef', 'food service'
+    ];
+
+    const isProductMaterial = productKeywords.some(keyword => text.includes(keyword));
+    if (isProductMaterial) {
+      console.log(`Filtering Mesh product/material article: "${title}"`);
+      return true; // Filter out mesh fabric/products
+    }
+
+    // Must mention fintech/finance/crypto/digital assets business indicators
+    const isFintech = text.includes('fintech') ||
+                     text.includes('front finance') ||
+                     text.includes('mesh connect') ||
+                     text.includes('meshconnect') ||
+                     text.includes('digital assets') ||
+                     text.includes('crypto') ||
+                     text.includes('embedded finance') ||
+                     text.includes('financial platform') ||
+                     text.includes('payment platform') ||
+                     text.includes('bam azizi') || // CEO
+                     text.includes('series a') ||
+                     text.includes('funding round') ||
+                     text.includes('money forward'); // Lead investor
+
+    if (!isFintech) {
+      console.log(`Filtering non-fintech Mesh article: "${title}"`);
+      return true; // Filter out if not about the fintech company
+    }
+  }
+
   // Albemarle: Must be about Albemarle Corporation (not Albemarle County, VA or Albemarle, NC)
   if (origin === 'albemarle_rss') {
     // Geographic false positives to exclude
