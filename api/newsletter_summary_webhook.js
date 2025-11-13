@@ -9,7 +9,7 @@ const redis = new Redis({
 const ZSET = "mentions:z";
 const SEEN_ID = "mentions:seen";
 const SEEN_LINK = "mentions:seen:canon";
-const RETENTION_HOURS = 24;
+const RETENTION_HOURS = 336; // Keep articles for 2 weeks (14 days)
 
 function idFromString(str) {
   let h = 0;

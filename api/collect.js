@@ -7,8 +7,8 @@ import { shouldFilterArticle, isStockPriceFocused, isOpinionPiece } from "./cont
 
 // ---- clients ----
 const redis = new Redis({
-  url: process.env.KV3_REST_API_URL,
-  token: process.env.KV3_REST_API_TOKEN
+  url: process.env.KV4_REST_API_URL,
+  token: process.env.KV4_REST_API_TOKEN
 });
 
 // Enable YouTube/media fields & add requestOptions for UA
@@ -38,7 +38,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const ZSET = "mentions:z";
 const SEEN_ID = "mentions:seen";
 const SEEN_LINK = "mentions:seen:canon";
-const RETENTION_HOURS = 24; // Keep articles for 24 hours only
+const RETENTION_HOURS = 336; // Keep articles for 2 weeks (14 days)
 
 // ---- config ----
 // Support both old RSS_FEEDS variable and new entity-specific feeds

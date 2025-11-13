@@ -2,8 +2,8 @@
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
-  url: process.env.KV3_REST_API_URL,
-  token: process.env.KV3_REST_API_TOKEN
+  url: process.env.KV4_REST_API_URL,
+  token: process.env.KV4_REST_API_TOKEN
 });
 
 const ZSET = "mentions:z";

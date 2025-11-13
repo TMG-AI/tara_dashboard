@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({ url: process.env.KV3_REST_API_URL, token: process.env.KV3_REST_API_TOKEN });
+const redis = new Redis({ url: process.env.KV4_REST_API_URL, token: process.env.KV4_REST_API_TOKEN });
 const ZSET = "mentions:z";
 const SEEN_MW  = "mentions:seen:mw";
 const SEEN_URL = "mentions:seen:canon";

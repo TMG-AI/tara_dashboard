@@ -28,8 +28,8 @@ export default async function handler(req, res) {
       NEWSLETTER_RSS_FEEDS_length: (process.env.NEWSLETTER_RSS_FEEDS || "").split(/[,;]/).filter(s => s.trim()).length,
       MELTWATER_API_KEY: !!process.env.MELTWATER_API_KEY,
       OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
-      KV3_REST_API_URL: !!process.env.KV3_REST_API_URL,
-      KV3_REST_API_TOKEN: !!process.env.KV3_REST_API_TOKEN
+      KV4_REST_API_URL: !!process.env.KV4_REST_API_URL,
+      KV4_REST_API_TOKEN: !!process.env.KV4_REST_API_TOKEN
     },
     feed_tests: []
   };
