@@ -197,6 +197,12 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
 
   // Apply universal filters (only for client feeds)
 
+  // Filter syndicated "Earnings Snapshot" articles (AP wire content)
+  if (title.includes('Earnings Snapshot') || title.includes('Q3 Earnings Snapshot') || title.includes('Q4 Earnings Snapshot') || title.includes('Q1 Earnings Snapshot') || title.includes('Q2 Earnings Snapshot')) {
+    console.log(`Filtering syndicated earnings snapshot: "${title}"`);
+    return true;
+  }
+
   if (isStockPriceFocused(title, summary, source)) {
     console.log(`Filtering stock-focused article: "${title}"`);
     return true;
@@ -336,6 +342,64 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     }
   }
 
+  // U.S. Soccer: Exclude game scores, match previews, routine player transfers, and international soccer
+  if (origin === 'us_soccer_foundation_rss' || origin === 'cindy_parlow_cone_rss') {
+    // Filter international soccer organizations (false positives from Google Alerts)
+    const internationalKeywords = [
+      'canada soccer', 'canadian soccer', 'mexico soccer', 'mexican soccer',
+      'fifa', 'uefa', 'premier league', 'la liga', 'bundesliga', 'serie a',
+      'champions league', 'europa league', 'world cup qualifier',
+      'england national team', 'spain national team', 'france national team',
+      'germany national team', 'brazil national team', 'argentina national team'
+    ];
+
+    const hasInternational = internationalKeywords.some(keyword => text.includes(keyword));
+    if (hasInternational) {
+      console.log(`Filtering international soccer article: "${title}"`);
+      return true;
+    }
+
+    // Filter routine match coverage
+    const matchKeywords = [
+      'game preview', 'match preview', 'game recap', 'match recap',
+      'starting lineup', 'injury report', 'game day', 'matchup',
+      'vs.', 'vs ', ' v ', ' @ ', // Game notation
+      'score', 'final score', 'box score', 'postgame', 'pregame',
+      'wins', 'loses', 'defeats', 'beats', 'ties',
+      'goal in', 'goals in', 'hat trick', 'penalty kick',
+      'nwsl standings', 'mls standings', 'table',
+      'playoff bracket', 'playoff preview'
+    ];
+
+    const hasMatchCoverage = matchKeywords.some(keyword => text.includes(keyword));
+
+    // Filter routine player transfers
+    const transferKeywords = [
+      'signs with', 'transferred to', 'joins club', 'loan deal',
+      'transfer window', 'free agent signing', 'contract extension',
+      're-signs with', 'waived by', 'traded to', 'acquired by'
+    ];
+
+    const hasTransfer = transferKeywords.some(keyword => text.includes(keyword));
+
+    // Keep governance, leadership, and policy news
+    const governanceKeywords = [
+      'us soccer foundation', 'ussf', 'board of directors', 'president',
+      'executive', 'leadership', 'governance', 'policy', 'lawsuit',
+      'investigation', 'controversy', 'congress', 'regulatory',
+      'equal pay', 'labor dispute', 'cba', 'collective bargaining',
+      'cindy parlow cone', 'parlow cone'
+    ];
+
+    const isGovernanceNews = governanceKeywords.some(keyword => text.includes(keyword));
+
+    // Filter if it's match/transfer news AND NOT governance
+    if ((hasMatchCoverage || hasTransfer) && !isGovernanceNews) {
+      console.log(`Filtering U.S. Soccer routine coverage: "${title}"`);
+      return true;
+    }
+  }
+
   // StubHub: Exclude ticket buying guides and event-focused articles
   if (origin === 'stubhub_rss') {
     const ticketBuyingKeywords = [
@@ -398,6 +462,104 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     // Filter if it's event-focused AND NOT business news
     if (isEventFocused && !isBusinessNews) {
       console.log(`Filtering StubHub event-focused article: "${title}"`);
+      return true;
+    }
+  }
+
+  // Google: Filter consumer product reviews and minor app updates
+  if (origin === 'google_rss') {
+    // Filter consumer product reviews
+    const consumerProductKeywords = [
+      'pixel review', 'pixel phone review', 'nest review', 'chromecast review',
+      'google home review', 'fitbit review', 'pixel watch review',
+      'pixel buds review', 'pixelbook review', 'stadia review',
+      'review:', 'hands-on:', 'unboxing', 'first look:',
+      'best pixel cases', 'best pixel accessories', 'tips and tricks'
+    ];
+
+    const hasConsumerReview = consumerProductKeywords.some(keyword => text.includes(keyword));
+    if (hasConsumerReview) {
+      console.log(`Filtering Google consumer product review: "${title}"`);
+      return true;
+    }
+
+    // Filter minor app/feature updates
+    const minorUpdateKeywords = [
+      'google maps adds', 'google maps update', 'new google maps feature',
+      'gmail adds', 'gmail update', 'new gmail feature',
+      'google photos adds', 'google photos update',
+      'google drive adds', 'google drive update',
+      'chrome adds', 'chrome update', 'new chrome feature',
+      'google search adds', 'google search now lets',
+      'google app update', 'google play store update',
+      'android update available', 'new emoji', 'new stickers',
+      'google doodle', 'shopping tab', 'inspirational images tab'
+    ];
+
+    const hasMinorUpdate = minorUpdateKeywords.some(keyword => text.includes(keyword));
+
+    // Keep major AI, regulatory, and business news
+    const majorNewsKeywords = [
+      'antitrust', 'lawsuit', 'department of justice', 'doj', 'ftc',
+      'regulation', 'regulatory', 'congress', 'senate', 'house',
+      'ai policy', 'gemini', 'google ai', 'deepmind', 'openai',
+      'acquisition', 'merger', 'partnership', 'earnings', 'revenue',
+      'layoff', 'restructuring', 'ceo', 'executive', 'sundar pichai',
+      'privacy', 'data breach', 'security', 'investigation'
+    ];
+
+    const isMajorNews = majorNewsKeywords.some(keyword => text.includes(keyword));
+
+    // Filter if it's a minor update AND NOT major news
+    if (hasMinorUpdate && !isMajorNews) {
+      console.log(`Filtering Google minor update: "${title}"`);
+      return true;
+    }
+  }
+
+  // Waymo: Filter minor incidents, product reviews, and test drives
+  if (origin === 'waymo_rss') {
+    // Filter minor incidents and accidents
+    const minorIncidentKeywords = [
+      'kills cat', 'killed cat', 'hit cat', 'struck cat',
+      'kills dog', 'killed dog', 'hit dog', 'struck dog',
+      'minor accident', 'minor collision', 'fender bender',
+      'traffic cone', 'construction cone', 'blocked by',
+      'confused by', 'stuck in traffic', 'blocking traffic',
+      'honking at', 'honked at', 'drives too slow'
+    ];
+
+    const hasMinorIncident = minorIncidentKeywords.some(keyword => text.includes(keyword));
+    if (hasMinorIncident) {
+      console.log(`Filtering Waymo minor incident: "${title}"`);
+      return true;
+    }
+
+    // Filter product reviews and test drive content
+    const reviewKeywords = [
+      'review:', 'hands-on:', 'first ride:', 'we rode in',
+      'i rode in', 'test drive', 'test ride', 'my experience',
+      'what it\'s like', 'pros and cons', 'impressions',
+      'video review', 'ride along', 'demonstration'
+    ];
+
+    const hasReview = reviewKeywords.some(keyword => text.includes(keyword));
+
+    // Keep regulatory, expansion, and major business news
+    const majorWaymoNews = [
+      'permit', 'approval', 'regulatory', 'dmv', 'cpuc',
+      'expansion', 'launch', 'new city', 'new market',
+      'partnership', 'acquisition', 'funding', 'investment',
+      'lawsuit', 'investigation', 'crash', 'fatality',
+      'freeway', 'highway', 'autonomous vehicle regulation',
+      'safety report', 'disengagement report', 'audit'
+    ];
+
+    const isMajorWaymoNews = majorWaymoNews.some(keyword => text.includes(keyword));
+
+    // Filter if it's a review AND NOT major news
+    if (hasReview && !isMajorWaymoNews) {
+      console.log(`Filtering Waymo product review: "${title}"`);
       return true;
     }
   }

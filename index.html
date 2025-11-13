@@ -1656,13 +1656,6 @@ ${articleText}`;
       console.log('🔄 Collecting fresh articles on page load...');
 
       try {
-        // Show loading indicator
-        const loading = document.getElementById('loading');
-        if (loading) {
-          loading.style.display = 'block';
-          loading.textContent = 'Collecting fresh articles from RSS feeds...';
-        }
-
         // Trigger RSS collection from all sources in parallel
         const collectionPromises = [
           fetch('/api/collect', { method: 'GET', cache: 'no-store' }).catch(e => {

@@ -29,6 +29,17 @@ export const BLOCKED_DOMAINS = [
   'aol.com',
   'news.aol.com',
 
+  // Financial/stock sites that create earnings duplication
+  'seekingalpha.com',
+  'marketscreener.com',
+  'tipranks.com',
+  'sherwood.news',
+  'thefly.com',
+  'investing.com',
+  'benzinga.com',
+  'zacks.com',
+  'gurufocus.com',
+
   // Generic content farms and low-quality aggregators
   'newsbreak.com',
   'omnilert.com',
@@ -41,6 +52,18 @@ export const BLOCKED_DOMAINS = [
   'securityonline.info',
   'digestwire.com',
   'okenergytoday.com',
+
+  // Low-quality local TV/news sites
+  'wabe.org',
+  'wrdw.com',
+  'gpb.org',
+  '10tv.com',
+  'seattlepi.com',
+
+  // Auto/tech blogs (low editorial value)
+  'autoblog.com',
+  'simpleflying.com',
+  'thetravel.com',
 
   // Low-value "Dive" network sites (keep cybersecuritydive.com)
   'k12dive.com',

@@ -189,8 +189,9 @@ async function isDuplicateStory(title, summary, origin) {
         const existingContent = normalizeText(`${article.title} ${article.summary || ''}`);
         const similarity = textSimilarity(normalizedContent, existingContent);
 
-        // If 60% or more of key words match, consider it a duplicate story
-        if (similarity >= 0.6) {
+        // If 75% or more of key words match, consider it a duplicate story
+        // Higher threshold to catch different angles on same story (e.g., Waymo cat incident)
+        if (similarity >= 0.75) {
           console.log(`Duplicate story detected: "${title}" similar to "${article.title}" (${Math.round(similarity * 100)}% match)`);
           return true;
         }
