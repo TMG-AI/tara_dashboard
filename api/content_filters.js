@@ -225,6 +225,62 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     return true;
   }
 
+  // === UNIVERSAL CONTENT QUALITY FILTERS (Client Feeds Only) ===
+
+  // Filter: Local crime with no policy/political angle
+  const localCrimeKeywords = [
+    'arrested for robbery',
+    'arrested for burglary',
+    'arrested for theft',
+    'arrested for assault',
+    'arrested for murder',
+    'stabbing victim',
+    'shooting victim',
+    'robbery suspect',
+    'burglary suspect'
+  ];
+
+  const politicalKeywords = [
+    'congress', 'congressional', 'investigation', 'federal', 'policy',
+    'lawsuit', 'senate', 'house', 'department of justice', 'fbi',
+    'regulatory', 'regulation', 'government', 'administration'
+  ];
+
+  const hasLocalCrime = localCrimeKeywords.some(keyword => text.includes(keyword));
+  const hasPoliticalContext = politicalKeywords.some(keyword => text.includes(keyword));
+
+  if (hasLocalCrime && !hasPoliticalContext) {
+    console.log(`Filtering local crime article: "${title}"`);
+    return true;
+  }
+
+  // Filter: Shopping/Product listings
+  const shoppingKeywords = [
+    'shoes on sale',
+    'on sale for',
+    'buy now and save',
+    'limited time offer',
+    'shop the collection',
+    'shop now',
+    'save up to',
+    'discount code',
+    'promo code',
+    'coupon code',
+    'free shipping',
+    'best deals',
+    'price drop'
+  ];
+
+  // Check for price patterns in title (e.g., "$19.99", "$229")
+  const hasPriceInTitle = /\$\d+(\.\d{2})?/.test(titleLower);
+
+  const hasShopping = shoppingKeywords.some(keyword => text.includes(keyword));
+
+  if (hasShopping || hasPriceInTitle) {
+    console.log(`Filtering shopping/product listing: "${title}"`);
+    return true;
+  }
+
   // === ENTITY-SPECIFIC FILTERS (Client Feeds Only) ===
 
   // Delta Air Lines: Exclude airplane incidents and new travel routes
@@ -441,6 +497,38 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     // Filter if it's event-focused AND NOT business news
     if (isEventFocused && !isBusinessNews) {
       console.log(`Filtering StubHub event-focused article: "${title}"`);
+      return true;
+    }
+  }
+
+  // Skydance: Filter routine production announcements, keep major corporate news
+  if (origin === 'skydance_rss') {
+    const productionKeywords = [
+      'tv show', 'tv series', 'new series', 'series premiere',
+      'film premiere', 'movie premiere', 'premiere date',
+      'season premiere', 'season finale', 'episode',
+      'cast announcement', 'casting', 'stars in',
+      'streaming on', 'available on', 'watch on',
+      'renewal', 'renewed for', 'canceled', 'cancelled',
+      'trailer', 'teaser', 'first look',
+      'setlist', 'filming', 'production begins'
+    ];
+
+    const corporateKeywords = [
+      'merger', 'acquisition', 'ceo', 'paramount',
+      'layoffs', 'employees', 'return to office', 'rto',
+      'investigation', 'congressional', 'lawsuit', 'settlement',
+      'stock', 'shares', 'nasdaq', 'earnings',
+      'funding', 'investment', 'valuation',
+      'partnership', 'deal', 'agreement', 'contract'
+    ];
+
+    const isProductionAnnouncement = productionKeywords.some(keyword => text.includes(keyword));
+    const isCorporateNews = corporateKeywords.some(keyword => text.includes(keyword));
+
+    // Filter if it's a production announcement AND NOT corporate news
+    if (isProductionAnnouncement && !isCorporateNews) {
+      console.log(`Filtering Skydance production announcement: "${title}"`);
       return true;
     }
   }
