@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is **Daily News Dashboard** - a media monitoring and alerting system that:
 - Collects news for specific clients from RSS feeds and Google Alerts
-- Monitors news for: Delta Air Lines, Google, StubHub, TikTok, and U.S. Soccer
+- Monitors news for: Waymo, Delta Air Lines, Google, StubHub, TikTok, and U.S. Soccer
 - Tracks general news from top national outlets (NYT, Washington Post, Politico)
 - Stores and deduplicates articles in Redis (Upstash)
 - Provides a web dashboard with client-specific filtering
@@ -45,6 +45,7 @@ Required for production:
 - `KV3_REST_API_TOKEN` - Upstash Redis token
 
 Client-specific RSS feeds (Google Alerts or similar):
+- `WAYMO_RSS` - RSS feed URL for Waymo articles
 - `DELTA_AIR_LINES_RSS` - RSS feed URL for Delta Air Lines articles
 - `GOOGLE_RSS` - RSS feed URL for Google articles
 - `STUBHUB_RSS` - RSS feed URL for StubHub articles

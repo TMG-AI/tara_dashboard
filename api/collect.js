@@ -57,7 +57,8 @@ const ENTITY_FEEDS = {
   'google_rss': process.env.GOOGLE_RSS,
   'stubhub_rss': process.env.STUBHUB_RSS,
   'tiktok_rss': process.env.TIKTOK_RSS,
-  'us_soccer_foundation_rss': process.env.US_SOCCER_FOUNDATION_RSS
+  'us_soccer_foundation_rss': process.env.US_SOCCER_FOUNDATION_RSS,
+  'waymo_rss': process.env.WAYMO_RSS
 };
 
 // Build feed list with entity tags

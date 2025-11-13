@@ -304,6 +304,11 @@
   <!-- Client Filter Cards -->
   <div class="client-cards-section">
     <div class="client-cards-container">
+      <div class="client-card" data-client="waymo_rss" onclick="filterByClient('waymo_rss')">
+        <div class="client-card-icon">🚗</div>
+        <div class="client-card-name">Waymo</div>
+        <div class="client-card-count" id="client-waymo">—</div>
+      </div>
       <div class="client-card" data-client="delta_air_lines_rss" onclick="filterByClient('delta_air_lines_rss')">
         <div class="client-card-icon">✈️</div>
         <div class="client-card-name">Delta Air Lines</div>
@@ -912,12 +917,14 @@
         setText('sb-local-news', localNewsCount);
 
         // Calculate individual client counts
+        const waymoCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'waymo_rss').length;
         const deltaCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'delta_air_lines_rss').length;
         const googleCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'google_rss').length;
         const stubhubCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'stubhub_rss').length;
         const tiktokCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'tiktok_rss').length;
         const ussoccerCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'us_soccer_foundation_rss').length;
 
+        setText('client-waymo', waymoCount);
         setText('client-delta', deltaCount);
         setText('client-google', googleCount);
         setText('client-stubhub', stubhubCount);
