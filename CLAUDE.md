@@ -4,14 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **Daily News Clips** - a media monitoring and alerting system that:
-- Collects AI and legal tech news from RSS feeds, Google Alerts, Meltwater, and newsletters
-- Educates lawyers on effective AI use in legal practice
-- Tracks new case law and regulatory developments related to AI
+This is **Daily News Dashboard** - a media monitoring and alerting system that:
+- Collects news for specific clients from RSS feeds and Google Alerts
+- Monitors news for: Delta Air Lines, Google, StubHub, TikTok, and U.S. Soccer
+- Tracks general news from top national outlets (NYT, Washington Post, Politico)
 - Stores and deduplicates articles in Redis (Upstash)
-- Provides a web dashboard to view mentions and analytics
+- Provides a web dashboard with client-specific filtering
+- Features clickable client cards for easy navigation to client-specific articles
 - Runs automated collection via Vercel cron jobs
-- Focuses on AI in legal practice, legal tech, and AI-related case law
+- Filters out press releases, opinion pieces, stock-focused articles, and low-quality content
 
 ## Architecture
 
@@ -43,13 +44,18 @@ Required for production:
 - `KV3_REST_API_URL` - Upstash Redis URL
 - `KV3_REST_API_TOKEN` - Upstash Redis token
 
-Entity-specific RSS feeds (Google Alerts or similar):
-- `RSS_FEED_DELTA_AIR_LINES` - RSS feed URL for Delta Air Lines articles
-- `RSS_FEED_GUARDANT_HEALTH` - RSS feed URL for Guardant Health articles
-- `RSS_FEED_ALBEMARLE` - RSS feed URL for Albemarle articles
-- `RSS_FEED_ADELANTO_HEALTHCARE` - RSS feed URL for Adelanto Healthcare articles
-- `RSS_FEED_CARLOS_ZAFARINI` - RSS feed URL for Carlos Zafarini Jr. articles
-- `RSS_FEED_STUBHUB` - RSS feed URL for StubHub articles
+Client-specific RSS feeds (Google Alerts or similar):
+- `DELTA_AIR_LINES_RSS` - RSS feed URL for Delta Air Lines articles
+- `GOOGLE_RSS` - RSS feed URL for Google articles
+- `STUBHUB_RSS` - RSS feed URL for StubHub articles
+- `TIKTOK_RSS` - RSS feed URL for TikTok articles
+- `US_SOCCER_FOUNDATION_RSS` - RSS feed URL for U.S. Soccer & Cindy Parlow Cone articles
+
+General news RSS feeds:
+- `NYT_TOP_NEWS_RSS` - New York Times top news feed
+- `WAPO_NATIONAL_NEWS_RSS` - Washington Post national news feed
+- `WAPO_POLITICS_RSS` - Washington Post politics feed
+- `POLITICO_RSS` - Politico news feed
 
 Legacy/Optional:
 - `RSS_FEEDS` - Semicolon or comma-separated list of RSS feed URLs (fallback for non-entity feeds)

@@ -51,70 +51,13 @@ const ENTITY_FEEDS = {
   'wapo_national_news_rss': process.env.WAPO_NATIONAL_NEWS_RSS,
   'wapo_politics_rss': process.env.WAPO_POLITICS_RSS,
   'politico_rss': process.env.POLITICO_RSS,
-  'wapo_local_rss': process.env.WAPO_LOCAL_RSS,
 
   // Client RSS Feeds
-  'adelanto_healthcare_ventures_rss': process.env.ADELANTO_HEALTHCARE_VENTURES_RSS,
-  'albemarle_rss': process.env.ALBEMARLE_RSS,
-  'albertsons_rss': process.env.ALBERTSONS_RSS,
-  'american_bridge_rss': process.env.AMERICAN_BRIDGE_RSS,
-  'american_independent_media_rss': process.env.AMERICAN_INDEPENDENT_MEDIA_RSS,
-  'arizona_public_service_rss': process.env.ARIZONA_PUBLIC_SERVICE_RSS,
-  'ascension_health_services_rss': process.env.ASCENSION_HEALTH_SERVICES_RSS,
-  'barclays_rss': process.env.BARCLAYS_RSS,
-  'blockchain_com_rss': process.env.BLOCKCHAIN_COM_RSS,
-  'capturerx_sisurx_rss': process.env.CAPTURERX_SISURX_RSS,
-  'christen_democratisch_appel_rss': process.env.CHRISTEN_DEMOCRATISCH_APPEL_RSS,
-  'davita_rss': process.env.DAVITA_RSS,
   'delta_air_lines_rss': process.env.DELTA_AIR_LINES_RSS,
-  'democracy_matters_rss': process.env.DEMOCRACY_MATTERS_RSS,
-  'duke_energy_rss': process.env.DUKE_ENERGY_RSS,
-  'eigen_labs_rss': process.env.EIGEN_LABS_RSS,
-  'evgo_rss': process.env.EVGO_RSS,
-  'front_financial_mesh_rss': process.env.FRONT_FINANCIAL_MESH_RSS,
-  'general_intelligence_agency_mongolia_rss': process.env.GENERAL_INTELLIGENCE_AGENCY_MONGOLIA_RSS,
-  'genesis_digital_assets_rss': process.env.GENESIS_DIGITAL_ASSETS_RSS,
   'google_rss': process.env.GOOGLE_RSS,
-  'guardant_health_rss': process.env.GUARDANT_HEALTH_RSS,
-  'hongshan_capital_advisors_rss': process.env.HONGSHAN_CAPITAL_ADVISORS_RSS,
-  'jim_messina_rss': process.env.JIM_MESSINA_RSS,
-  'jones_walker_rss': process.env.JONES_WALKER_RSS,
-  'keep_americans_covered_rss': process.env.KEEP_AMERICANS_COVERED_RSS,
-  'kelvin_zero_rss': process.env.KELVIN_ZERO_RSS,
-  'mayday_health_rss': process.env.MAYDAY_HEALTH_RSS,
-  'methodic_labs_rss': process.env.METHODIC_LABS_RSS,
-  'online_lenders_alliance_rss': process.env.ONLINE_LENDERS_ALLIANCE_RSS,
-  'portland_general_electric_rss': process.env.PORTLAND_GENERAL_ELECTRIC_RSS,
-  'public_first_rss': process.env.PUBLIC_FIRST_RSS,
-  'roland_berger_rss': process.env.ROLAND_BERGER_RSS,
-  'rowland_huelin_phil_romeril_rss': process.env.ROWLAND_HUELIN_PHIL_ROMERIL_RSS,
-  'santander_rss': process.env.SANTANDER_RSS,
-  'sequence_inc_rss': process.env.SEQUENCE_INC_RSS,
-  'sharrow_marine_rss': process.env.SHARROW_MARINE_RSS,
-  'signum_global_advisors_rss': process.env.SIGNUM_GLOBAL_ADVISORS_RSS,
-  'simpson_thatcher_bartlett_rss': process.env.SIMPSON_THATCHER_BARTLETT_RSS,
-  'skydance_rss': process.env.SKYDANCE_RSS,
-  'sphinx_investment_corp_rss': process.env.SPHINX_INVESTMENT_CORP_RSS,
-  'stonington_global_rss': process.env.STONINGTON_GLOBAL_RSS,
-  'strand_partners_rss': process.env.STRAND_PARTNERS_RSS,
-  'stretto_rss': process.env.STRETTO_RSS,
   'stubhub_rss': process.env.STUBHUB_RSS,
-  'sui_foundation_rss': process.env.SUI_FOUNDATION_RSS,
-  'suno_rss': process.env.SUNO_RSS,
-  'the_messina_group_rss': process.env.THE_MESSINA_GROUP_RSS,
-  'tidjane_thiam_rss': process.env.TIDJANE_THIAM_RSS,
   'tiktok_rss': process.env.TIKTOK_RSS,
-  'trousdale_ventures_rss': process.env.TROUSDALE_VENTURES_RSS,
-  'viz_ai_rss': process.env.VIZ_AI_RSS,
-  'bank_of_ny_sullivan_cromwell_rss': process.env.BANK_OF_NY_SULLIVAN_CROMWELL_RSS,
-  'braemar_hotels_resorts_rss': process.env.BRAEMAR_HOTELS_RESORTS_RSS,
-  'coinbase_rss': process.env.COINBASE_RSS,
-  'davidson_kempner_capital_rss': process.env.DAVIDSON_KEMPNER_CAPITAL_RSS,
-  'lyft_rss': process.env.LYFT_RSS,
-  'sascc_rss': process.env.SASCC_RSS,
-  'us_soccer_foundation_rss': process.env.US_SOCCER_FOUNDATION_RSS,
-  'viagogo_rss': process.env.VIAGOGO_RSS,
-  'carlos_zafarini_jr_rss': process.env.CARLOS_ZAFARINI_JR_RSS
+  'us_soccer_foundation_rss': process.env.US_SOCCER_FOUNDATION_RSS
 };
 
 // Build feed list with entity tags
@@ -347,13 +290,12 @@ export default async function handler(req, res) {
           const link = extractItemLink(e);
           const source = displaySource(link, feedTitle);
 
-          // Define general/top/local news feeds (NO filtering applied to these)
+          // Define general/top news feeds (NO filtering applied to these)
           const generalNewsFeeds = [
             'nyt_top_news_rss',
             'wapo_national_news_rss',
             'wapo_politics_rss',
-            'politico_rss',
-            'wapo_local_rss'
+            'politico_rss'
           ];
           const isGeneralNews = generalNewsFeeds.includes(origin?.toLowerCase());
 

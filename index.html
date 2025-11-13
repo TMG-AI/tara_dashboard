@@ -79,6 +79,51 @@
     .summary-label{color:#333;font-size:15px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;min-height:40px;display:flex;align-items:flex-end;justify-content:center}
     .summary-value{font-size:32px;font-weight:700;color:#4a6741;margin:0}
 
+    /* Client Filter Cards */
+    .client-cards-section{
+      background:#fff;margin:20px auto;max-width:1200px;border-radius:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid rgba(139,195,74,.12);overflow:hidden;padding:24px
+    }
+    .client-cards-container{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px
+    }
+    .client-card{
+      background:linear-gradient(135deg,#fff,#fafbfc);
+      border-radius:12px;padding:24px;
+      box-shadow:0 2px 8px rgba(0,0,0,.05);
+      border:2px solid rgba(139,195,74,.12);
+      transition:.3s;cursor:pointer;
+      text-align:center;
+      position:relative;
+      overflow:hidden
+    }
+    .client-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,#8bc34a,#7cb342);
+      opacity:0;transition:.3s
+    }
+    .client-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 8px 20px rgba(0,0,0,.12);
+      border-color:rgba(139,195,74,.4)
+    }
+    .client-card:hover::before{opacity:1}
+    .client-card.active{
+      border:2px solid #4a6741;
+      background:linear-gradient(135deg,rgba(139,195,74,.08),rgba(139,195,74,.12));
+      box-shadow:0 4px 16px rgba(74,103,65,.2)
+    }
+    .client-card.active::before{opacity:1}
+    .client-card-icon{font-size:32px;margin-bottom:8px}
+    .client-card-name{
+      font-size:15px;font-weight:600;color:#333;
+      margin-bottom:8px;letter-spacing:-.01em
+    }
+    .client-card-count{
+      font-size:24px;font-weight:700;color:#4a6741;
+      margin-top:4px
+    }
+
     .wrap{max-width:1200px;margin:0 auto;padding:24px 24px}
 
     /* Filter Bar */
@@ -256,6 +301,36 @@
     </div>
   </div>
 
+  <!-- Client Filter Cards -->
+  <div class="client-cards-section">
+    <div class="client-cards-container">
+      <div class="client-card" data-client="delta_air_lines_rss" onclick="filterByClient('delta_air_lines_rss')">
+        <div class="client-card-icon">✈️</div>
+        <div class="client-card-name">Delta Air Lines</div>
+        <div class="client-card-count" id="client-delta">—</div>
+      </div>
+      <div class="client-card" data-client="google_rss" onclick="filterByClient('google_rss')">
+        <div class="client-card-icon">🔍</div>
+        <div class="client-card-name">Google</div>
+        <div class="client-card-count" id="client-google">—</div>
+      </div>
+      <div class="client-card" data-client="stubhub_rss" onclick="filterByClient('stubhub_rss')">
+        <div class="client-card-icon">🎫</div>
+        <div class="client-card-name">StubHub</div>
+        <div class="client-card-count" id="client-stubhub">—</div>
+      </div>
+      <div class="client-card" data-client="tiktok_rss" onclick="filterByClient('tiktok_rss')">
+        <div class="client-card-icon">📱</div>
+        <div class="client-card-name">TikTok</div>
+        <div class="client-card-count" id="client-tiktok">—</div>
+      </div>
+      <div class="client-card" data-client="us_soccer_foundation_rss" onclick="filterByClient('us_soccer_foundation_rss')">
+        <div class="client-card-icon">⚽</div>
+        <div class="client-card-name">U.S. Soccer</div>
+        <div class="client-card-count" id="client-ussoccer">—</div>
+      </div>
+    </div>
+  </div>
 
   <div class="wrap">
     <!-- AI Chat Interface -->
@@ -606,6 +681,7 @@
     }
 
     let currentFilter = 'all';
+    let currentClientFilter = null; // For filtering by specific client
     let allMentions = [];
     let selectedArticles = new Set(); // Track selected articles for summary
     let allArticles = []; // Store all articles for summary
@@ -654,6 +730,11 @@
           const localNewsOrigins = ['wapo_local_rss'];
           const allGeneralNews = [...topNewsOrigins, ...localNewsOrigins];
           filtered = filtered.filter(m => !allGeneralNews.includes((m.origin || "").toLowerCase()));
+
+          // If a specific client is selected, filter further
+          if (currentClientFilter) {
+            filtered = filtered.filter(m => (m.origin || "").toLowerCase() === currentClientFilter.toLowerCase());
+          }
         } else if (currentFilter !== 'all') {
           // Handle RSS feed filter from dropdown
           filtered = filtered.filter(m => {
@@ -709,12 +790,40 @@
 
     function filterByEntity(entity){
       currentFilter = entity;
+      currentClientFilter = null; // Clear client filter when using entity filter
 
       // Update active state on summary items
       document.querySelectorAll('.summary-item').forEach(item => {
         item.classList.remove('active');
       });
       document.querySelector(`[data-filter="${entity}"]`).classList.add('active');
+
+      // Clear client card active states
+      document.querySelectorAll('.client-card').forEach(card => {
+        card.classList.remove('active');
+      });
+
+      // Reload with filter
+      loadMentions();
+    }
+
+    function filterByClient(clientOrigin){
+      currentClientFilter = clientOrigin;
+      currentFilter = 'clients'; // Set to clients category
+
+      // Update active state on client cards
+      document.querySelectorAll('.client-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      const activeCard = document.querySelector(`[data-client="${clientOrigin}"]`);
+      if (activeCard) activeCard.classList.add('active');
+
+      // Update summary items to show 'clients' as active
+      document.querySelectorAll('.summary-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      const clientsItem = document.querySelector(`[data-filter="clients"]`);
+      if (clientsItem) clientsItem.classList.add('active');
 
       // Reload with filter
       loadMentions();
@@ -801,6 +910,19 @@
         setText('sb-clients', clientsCount);
         setText('sb-top-news', topNewsCount);
         setText('sb-local-news', localNewsCount);
+
+        // Calculate individual client counts
+        const deltaCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'delta_air_lines_rss').length;
+        const googleCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'google_rss').length;
+        const stubhubCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'stubhub_rss').length;
+        const tiktokCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'tiktok_rss').length;
+        const ussoccerCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'us_soccer_foundation_rss').length;
+
+        setText('client-delta', deltaCount);
+        setText('client-google', googleCount);
+        setText('client-stubhub', stubhubCount);
+        setText('client-tiktok', tiktokCount);
+        setText('client-ussoccer', ussoccerCount);
       } catch(e) {
         console.error('Error refreshing stats:', e);
       }

@@ -180,13 +180,12 @@ export function isOpinionPiece(title, summary, source, link) {
  * IMPORTANT: Filters only apply to client alert feeds, NOT to general/top/local news feeds
  */
 export function shouldFilterArticle(origin, title, summary, source, link) {
-  // Skip ALL filtering for general/top/local news feeds
+  // Skip ALL filtering for general/top news feeds
   const generalNewsFeeds = [
     'nyt_top_news_rss',
     'wapo_national_news_rss',
     'wapo_politics_rss',
-    'politico_rss',
-    'wapo_local_rss'
+    'politico_rss'
   ];
 
   if (generalNewsFeeds.includes(origin?.toLowerCase())) {
@@ -198,24 +197,7 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
 
   // Apply universal filters (only for client feeds)
 
-  // Special handling for Coinbase: Skip crypto filtering but still filter stock prices
-  const isCoinbaseFeed = origin === 'coinbase_rss';
-
   if (isStockPriceFocused(title, summary, source)) {
-    // For Coinbase feed, check if it's crypto-related (should keep)
-    if (isCoinbaseFeed) {
-      const text = `${title} ${summary}`.toLowerCase();
-      const cryptoKeywords = ['bitcoin', 'btc', 'ethereum', 'eth', 'crypto', 'cryptocurrency',
-        'dogecoin', 'doge', 'ripple', 'xrp', 'litecoin', 'ltc', 'blockchain', 'altcoin',
-        'token', 'coinbase', 'binance', 'crypto exchange', 'nft'];
-      const isCryptoRelated = cryptoKeywords.some(keyword => text.includes(keyword));
-
-      if (isCryptoRelated) {
-        console.log(`Keeping crypto article for Coinbase feed: "${title}"`);
-        return false; // Don't filter - keep crypto news for Coinbase
-      }
-    }
-
     console.log(`Filtering stock-focused article: "${title}"`);
     return true;
   }
@@ -313,82 +295,6 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     }
   }
 
-  // Front Financial Mesh: Must be about Mesh the fintech company (not mesh fabric/products)
-  if (origin === 'front_financial_mesh_rss') {
-    // Product/material false positives to exclude
-    const productKeywords = [
-      'mesh fabric', 'mesh material', 'mesh shoes', 'mesh sneakers',
-      'mesh upper', 'mesh panel', 'mesh construction',
-      'mesh pocket', 'mesh bag', 'mesh case', 'mesh cover',
-      'wire mesh', 'screen mesh', 'mesh filter', 'mesh guard',
-      'mesh design', 'breathable mesh', 'lightweight mesh',
-      'restaurant', 'menu', 'dining', 'chef', 'food service'
-    ];
-
-    const isProductMaterial = productKeywords.some(keyword => text.includes(keyword));
-    if (isProductMaterial) {
-      console.log(`Filtering Mesh product/material article: "${title}"`);
-      return true; // Filter out mesh fabric/products
-    }
-
-    // Must mention fintech/finance/crypto/digital assets business indicators
-    const isFintech = text.includes('fintech') ||
-                     text.includes('front finance') ||
-                     text.includes('mesh connect') ||
-                     text.includes('meshconnect') ||
-                     text.includes('digital assets') ||
-                     text.includes('crypto') ||
-                     text.includes('embedded finance') ||
-                     text.includes('financial platform') ||
-                     text.includes('payment platform') ||
-                     text.includes('bam azizi') || // CEO
-                     text.includes('series a') ||
-                     text.includes('funding round') ||
-                     text.includes('money forward'); // Lead investor
-
-    if (!isFintech) {
-      console.log(`Filtering non-fintech Mesh article: "${title}"`);
-      return true; // Filter out if not about the fintech company
-    }
-  }
-
-  // Albemarle: Must be about Albemarle Corporation (not Albemarle County, VA or Albemarle, NC)
-  if (origin === 'albemarle_rss') {
-    // Geographic false positives to exclude
-    const geographicKeywords = [
-      'albemarle county',
-      'albemarle, nc',
-      'albemarle north carolina',
-      'city of albemarle',
-      'charlottesville', // County seat of Albemarle County, VA
-      'albemarle sound' // Body of water in NC
-    ];
-
-    const isGeographic = geographicKeywords.some(keyword => text.includes(keyword));
-    if (isGeographic) {
-      return true; // Filter out geographic references
-    }
-
-    // Must mention corporation/business indicators
-    const isCorporation = text.includes('corporation') ||
-                         text.includes('corp.') ||
-                         text.includes('company') ||
-                         text.includes('albemarle corp') ||
-                         text.includes('alb') || // Stock ticker
-                         text.includes('lithium') || // Their main business
-                         text.includes('chemical') ||
-                         text.includes('kings mountain') || // Mine location
-                         text.includes('charlotte') && text.includes('based'); // HQ
-
-    if (!isCorporation) {
-      return true; // Filter out if not about the corporation
-    }
-  }
-
-  // Albertsons: Avoid duplicative local coverage - commented out for now
-  // Note: User wants to avoid duplicative articles in local outlets, but this requires
-  // more sophisticated duplicate detection than simple keyword matching
-
   // TikTok: Exclude influencer trends and creator content
   if (origin === 'tiktok_rss') {
     const influencerKeywords = [
@@ -428,11 +334,6 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     if (!isSubstantiveNews) {
       return true;
     }
-  }
-
-  // Guardant Health: Accept all news (including stock/financial per instructions)
-  if (origin === 'guardant_health_rss') {
-    return false; // Accept everything
   }
 
   // StubHub: Exclude ticket buying guides and event-focused articles
@@ -498,88 +399,6 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     if (isEventFocused && !isBusinessNews) {
       console.log(`Filtering StubHub event-focused article: "${title}"`);
       return true;
-    }
-  }
-
-  // Skydance: Filter routine production announcements, keep major corporate news
-  if (origin === 'skydance_rss') {
-    const productionKeywords = [
-      'tv show', 'tv series', 'new series', 'series premiere',
-      'film premiere', 'movie premiere', 'premiere date',
-      'season premiere', 'season finale', 'episode',
-      'cast announcement', 'casting', 'stars in',
-      'streaming on', 'available on', 'watch on',
-      'renewal', 'renewed for', 'canceled', 'cancelled',
-      'trailer', 'teaser', 'first look',
-      'setlist', 'filming', 'production begins'
-    ];
-
-    const corporateKeywords = [
-      'merger', 'acquisition', 'ceo', 'paramount',
-      'layoffs', 'employees', 'return to office', 'rto',
-      'investigation', 'congressional', 'lawsuit', 'settlement',
-      'stock', 'shares', 'nasdaq', 'earnings',
-      'funding', 'investment', 'valuation',
-      'partnership', 'deal', 'agreement', 'contract'
-    ];
-
-    const isProductionAnnouncement = productionKeywords.some(keyword => text.includes(keyword));
-    const isCorporateNews = corporateKeywords.some(keyword => text.includes(keyword));
-
-    // Filter if it's a production announcement AND NOT corporate news
-    if (isProductionAnnouncement && !isCorporateNews) {
-      console.log(`Filtering Skydance production announcement: "${title}"`);
-      return true;
-    }
-  }
-
-  // American Independent Media: Avoid false positives
-  if (origin === 'american_independent_media_rss') {
-    // This phrase gets used in non-related contexts frequently
-    // Only keep if it mentions "American Bridge" or specific related entities
-    const isRelated = text.includes('american bridge') ||
-                     text.includes('american bridge foundation') ||
-                     text.includes('american bridge 21st century');
-
-    if (!isRelated) {
-      return true; // Filter out non-related uses of the phrase
-    }
-  }
-
-  // Jim Messina: Exclude musician, only include political consultant
-  if (origin === 'jim_messina_rss') {
-    const jimMessinaText = text.includes('jim messina') || text.includes('messina');
-
-    if (jimMessinaText) {
-      // Musician indicators (filter these out)
-      const musicianKeywords = [
-        'guitar', 'guitarist', 'concert', 'tour', 'touring', 'album', 'music',
-        'band', 'poco', 'loggins', 'loggins and messina', 'musician', 'singer',
-        'song', 'performance', 'setlist', 'venue', 'tickets', 'show', 'gig',
-        'record', 'recording', 'country rock', 'rock band', 'buffalo springfield'
-      ];
-
-      const isMusician = musicianKeywords.some(keyword => text.includes(keyword));
-
-      if (isMusician) {
-        console.log(`Filtering Jim Messina musician article: "${title}"`);
-        return true; // Filter out musician articles
-      }
-
-      // Political consultant indicators (keep these)
-      const politicalKeywords = [
-        'messina group', 'obama', 'campaign', 'politics', 'political',
-        'consultant', 'chief of staff', 'white house', 'democratic',
-        'election', 'strategy', 'strategist', 'biden', 'dnc'
-      ];
-
-      const isPolitical = politicalKeywords.some(keyword => text.includes(keyword));
-
-      if (!isPolitical) {
-        // If it mentions Jim Messina but has no political context, filter it out
-        console.log(`Filtering ambiguous Jim Messina article (no political context): "${title}"`);
-        return true;
-      }
     }
   }
 
