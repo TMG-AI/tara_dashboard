@@ -1651,10 +1651,54 @@ ${articleText}`;
       loadMentions();
     }
 
-    // Initialize: load articles, stats, and timestamp on page load
-    loadMentions();
-    refreshStats();
-    refreshTimestamp();
+    // Auto-collect fresh articles on page load
+    async function initializeDashboard() {
+      console.log('🔄 Collecting fresh articles on page load...');
+
+      try {
+        // Show loading indicator
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.display = 'block';
+          loading.textContent = 'Collecting fresh articles from RSS feeds...';
+        }
+
+        // Trigger RSS collection from all sources in parallel
+        const collectionPromises = [
+          fetch('/api/collect', { method: 'GET', cache: 'no-store' }).catch(e => {
+            console.error('RSS collection error:', e);
+            return { ok: false, error: e.message };
+          }),
+          fetch('/api/newsletter_rss_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
+            console.error('Newsletter collection error:', e);
+            return { ok: false, error: e.message };
+          }),
+          fetch('/api/meltwater_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
+            console.error('Meltwater collection error:', e);
+            return { ok: false, error: e.message };
+          })
+        ];
+
+        // Wait for all collections to complete
+        const results = await Promise.all(collectionPromises);
+        console.log('✅ RSS collection complete', results);
+
+        // Now load the dashboard with fresh data
+        await loadMentions();
+        await Promise.all([refreshStats(), refreshTimestamp()]);
+
+        console.log('✅ Dashboard initialized with fresh data');
+      } catch (error) {
+        console.error('❌ Dashboard initialization error:', error);
+        // Still try to load cached data even if collection fails
+        loadMentions();
+        refreshStats();
+        refreshTimestamp();
+      }
+    }
+
+    // Initialize dashboard on page load
+    initializeDashboard();
   </script>
 
 <script>
