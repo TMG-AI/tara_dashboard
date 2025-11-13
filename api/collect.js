@@ -58,6 +58,7 @@ const ENTITY_FEEDS = {
   'stubhub_rss': process.env.STUBHUB_RSS,
   'tiktok_rss': process.env.TIKTOK_RSS,
   'us_soccer_foundation_rss': process.env.US_SOCCER_FOUNDATION_RSS,
+  'cindy_parlow_cone_rss': process.env.CINDY_PARLOW_CONE_RSS,
   'waymo_rss': process.env.WAYMO_RSS
 };
 

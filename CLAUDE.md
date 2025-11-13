@@ -41,8 +41,8 @@ This is **Daily News Dashboard** - a media monitoring and alerting system that:
 ## Environment Variables
 
 Required for production:
-- `KV3_REST_API_URL` - Upstash Redis URL
-- `KV3_REST_API_TOKEN` - Upstash Redis token
+- `KV4_REST_API_URL` - Upstash Redis URL
+- `KV4_REST_API_TOKEN` - Upstash Redis token
 
 Client-specific RSS feeds (Google Alerts or similar):
 - `WAYMO_RSS` - RSS feed URL for Waymo articles
@@ -50,7 +50,8 @@ Client-specific RSS feeds (Google Alerts or similar):
 - `GOOGLE_RSS` - RSS feed URL for Google articles
 - `STUBHUB_RSS` - RSS feed URL for StubHub articles
 - `TIKTOK_RSS` - RSS feed URL for TikTok articles
-- `US_SOCCER_FOUNDATION_RSS` - RSS feed URL for U.S. Soccer & Cindy Parlow Cone articles
+- `US_SOCCER_FOUNDATION_RSS` - RSS feed URL for U.S. Soccer Foundation articles
+- `CINDY_PARLOW_CONE_RSS` - RSS feed URL for Cindy Parlow Cone articles (displays combined with US Soccer card)
 
 General news RSS feeds:
 - `NYT_TOP_NEWS_RSS` - New York Times top news feed

@@ -745,7 +745,14 @@
 
           // If a specific client is selected, filter further
           if (currentClientFilter) {
-            filtered = filtered.filter(m => (m.origin || "").toLowerCase() === currentClientFilter.toLowerCase());
+            filtered = filtered.filter(m => {
+              const origin = (m.origin || "").toLowerCase();
+              // US Soccer includes both foundation and Cindy Parlow Cone feeds
+              if (currentClientFilter.toLowerCase() === 'us_soccer_foundation_rss') {
+                return origin === 'us_soccer_foundation_rss' || origin === 'cindy_parlow_cone_rss';
+              }
+              return origin === currentClientFilter.toLowerCase();
+            });
           }
         } else if (currentFilter !== 'all') {
           // Handle RSS feed filter from dropdown
@@ -921,7 +928,10 @@
         const googleCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'google_rss').length;
         const stubhubCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'stubhub_rss').length;
         const tiktokCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'tiktok_rss').length;
-        const ussoccerCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'us_soccer_foundation_rss').length;
+        const ussoccerCount = filtered.filter(m => {
+          const origin = (m.origin || "").toLowerCase();
+          return origin === 'us_soccer_foundation_rss' || origin === 'cindy_parlow_cone_rss';
+        }).length;
 
         setText('client-waymo', waymoCount);
         setText('client-delta', deltaCount);
