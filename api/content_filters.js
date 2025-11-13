@@ -80,22 +80,34 @@ export function isStockPriceFocused(title, summary, source) {
   }
 
   // Filter if it has crypto keywords (from any source)
+  // BUT this filter is NOT applied to specific client feeds in shouldFilterArticle()
   if (hasCryptoKeywords) {
     return true;
   }
 
-  // Check if title is primarily about stock movement
+  // Check if title is primarily about stock movement or stock analysis
   const titleLower = title.toLowerCase();
-  const stockMovementInTitle = [
+  const stockFocusedInTitle = [
     'stock up',
     'stock down',
     'shares up',
     'shares down',
     'gains on',
-    'drops on'
+    'drops on',
+    'stock cheap',
+    'stock expensive',
+    'stock performs',
+    'stock performance',
+    'stock move',
+    'stock climbs',
+    'stock falls',
+    'stock outlook',
+    'stock forecast',
+    'stock analysis',
+    'stock valuation'
   ].some(phrase => titleLower.includes(phrase));
 
-  return stockMovementInTitle;
+  return stockFocusedInTitle;
 }
 
 /**
@@ -185,7 +197,25 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
   const titleLower = title.toLowerCase();
 
   // Apply universal filters (only for client feeds)
+
+  // Special handling for Coinbase: Skip crypto filtering but still filter stock prices
+  const isCoinbaseFeed = origin === 'coinbase_rss';
+
   if (isStockPriceFocused(title, summary, source)) {
+    // For Coinbase feed, check if it's crypto-related (should keep)
+    if (isCoinbaseFeed) {
+      const text = `${title} ${summary}`.toLowerCase();
+      const cryptoKeywords = ['bitcoin', 'btc', 'ethereum', 'eth', 'crypto', 'cryptocurrency',
+        'dogecoin', 'doge', 'ripple', 'xrp', 'litecoin', 'ltc', 'blockchain', 'altcoin',
+        'token', 'coinbase', 'binance', 'crypto exchange', 'nft'];
+      const isCryptoRelated = cryptoKeywords.some(keyword => text.includes(keyword));
+
+      if (isCryptoRelated) {
+        console.log(`Keeping crypto article for Coinbase feed: "${title}"`);
+        return false; // Don't filter - keep crypto news for Coinbase
+      }
+    }
+
     console.log(`Filtering stock-focused article: "${title}"`);
     return true;
   }
