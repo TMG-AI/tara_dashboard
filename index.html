@@ -1233,7 +1233,28 @@
       response.style.display = 'none';
 
       const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const question = `Create an executive summary of today's Daily News Clips for The Messina Group. Format: Start with "Executive Summary: Daily News Clips - ${today}". Organize by: **Top Stories** (2-3 most important), **Government & Policy**, **TMG & Client News**, **Business & Markets**, **Stories to Watch**. Keep to 300-500 words. Focus on TMG operations, clients, major political/policy developments, and business implications. Use active language, complete sentences in bullets, cite sources with [1][2][3]. Prioritize actionable intelligence for executives.`;
+      const question = `Create an executive summary of today's Daily News Clips for The Messina Group. Format: Start with "Executive Summary: Daily News Clips - ${today}".
+
+REQUIRED CLIENT SECTIONS (in this order):
+1. **Waymo** - Summarize all Waymo articles (autonomous vehicles, regulatory, expansion)
+2. **StubHub** - Summarize all StubHub articles (business news, fees, earnings, lawsuits)
+3. **Delta Air Lines** - Summarize all Delta articles (corporate news, partnerships, major operational news)
+4. **TikTok** - Summarize all TikTok articles (regulatory, legal, policy, corporate news)
+5. **U.S. Soccer** - Summarize all U.S. Soccer Foundation and Cindy Parlow Cone articles (governance, leadership, policy)
+6. **Google** - Summarize all Google articles (AI policy, antitrust, regulatory, major business news)
+7. **Top News** - Summarize major political/national news (NYT, WashPost, Politico)
+8. **Newsletters** - Summarize any newsletter articles
+
+IMPORTANT RULES:
+- Include EVERY client section even if there's only 1 article - do not skip clients
+- If a client has no articles, write "No articles today" under that section
+- For each client, provide a 2-4 sentence summary of key developments
+- Use bullet points if multiple stories per client
+- Cite sources with [1][2][3] notation
+- Keep each client summary concise but complete
+- Prioritize actionable intelligence for client calls and briefings
+
+Total length: 500-700 words. Focus on what's immediately useful for The Messina Group team going into client calls.`;
 
       try {
         const res = await fetch('/api/chat', {
