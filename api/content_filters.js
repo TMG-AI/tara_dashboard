@@ -192,8 +192,13 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
     return false; // Don't filter any general news articles
   }
 
-  const text = `${title} ${summary}`.toLowerCase();
-  const titleLower = title.toLowerCase();
+  // Strip HTML tags before comparison (Google Alerts adds <b> tags)
+  const stripHtml = (str) => (str || '').replace(/<[^>]*>/g, '');
+  const cleanTitle = stripHtml(title);
+  const cleanSummary = stripHtml(summary);
+
+  const text = `${cleanTitle} ${cleanSummary}`.toLowerCase();
+  const titleLower = cleanTitle.toLowerCase();
 
   // Apply universal filters (only for client feeds)
 
