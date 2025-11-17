@@ -349,7 +349,21 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
 
   // U.S. Soccer: Exclude game scores, match previews, routine player transfers, and international soccer
   if (origin === 'us_soccer_foundation_rss' || origin === 'cindy_parlow_cone_rss') {
-    // Filter international soccer organizations (false positives from Google Alerts)
+    // Filter non-soccer sports and international soccer (false positives from Google Alerts)
+    const nonSoccerKeywords = [
+      'pga of america', 'pga tour', 'professional golfers',
+      'nba', 'nfl', 'mlb', 'nhl', // Other US sports leagues
+      'usga', 'lpga', 'usa basketball', 'usa hockey',
+      'usa volleyball', 'usa gymnastics', 'usa swimming'
+    ];
+
+    const hasNonSoccer = nonSoccerKeywords.some(keyword => text.includes(keyword));
+    if (hasNonSoccer) {
+      console.log(`Filtering non-soccer sports article: "${title}"`);
+      return true;
+    }
+
+    // Filter international soccer organizations
     const internationalKeywords = [
       'canada soccer', 'canadian soccer', 'mexico soccer', 'mexican soccer',
       'fifa', 'uefa', 'premier league', 'la liga', 'bundesliga', 'serie a',
