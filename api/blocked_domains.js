@@ -75,6 +75,18 @@ export const BLOCKED_DOMAINS = [
   'itbrief.asia',
   'itbrief.co.uk',
   'securitybrief.com.au',
+
+  // Low-quality travel/airline blogs
+  'travelandtourworld.com',
+  'caintravel.com',
+  'blog.caintravel.com',
+
+  // Low-value local TV/radio stations (Delta minor route changes)
+  'kmvt.com',
+  'knoxradio.com',
+
+  // Low-value industry trade publications
+  'customerexperiencedive.com',
 ];
 
 /**

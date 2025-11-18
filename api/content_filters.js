@@ -276,7 +276,7 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
 
   // === ENTITY-SPECIFIC FILTERS (Client Feeds Only) ===
 
-  // Delta Air Lines: Exclude airplane incidents and new travel routes
+  // Delta Air Lines: Exclude airplane incidents, route changes, airport/TSA news, and generic airline industry news
   if (origin === 'delta_air_lines_rss') {
     const incidentKeywords = [
       'incident', 'crash', 'emergency', 'accident', 'diverted', 'grounded',
@@ -284,24 +284,83 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
       'investigation', 'turbulence', 'forced landing', 'engine failure',
       'medical emergency', 'unruly passenger'
     ];
+
+    // Airport/TSA security incidents (not Delta business news)
+    const airportSecurityKeywords = [
+      'tsa investigating', 'tsa finds', 'tsa discovered', 'tsa checkpoint',
+      'security checkpoint', 'airport security', 'screeners found',
+      'went through security', 'made it onto a plane', 'made it through tsa',
+      'hazardous item', 'weapon found', 'contraband', 'security breach'
+    ];
+
+    // Airport infrastructure news (not Delta-specific)
+    const airportInfraKeywords = [
+      'airport opens', 'opens new checkpoint', 'opens new terminal',
+      'airport renovates', 'airport expands', 'new security checkpoint',
+      'terminal construction', 'concourse opens', 'gate expansion'
+    ];
+
+    // Generic airline industry news (mentions Delta but not Delta-focused)
+    const genericAirlineKeywords = [
+      'airlines will not have to', 'airlines must', 'airlines face',
+      'airline industry', 'aviation industry', 'carriers including',
+      'among airlines', 'airlines like delta', 'delta and other airlines',
+      'major airlines', 'u.s. airlines', 'domestic carriers'
+    ];
+
     const routeKeywords = [
+      // Existing route keywords
       'new route', 'adds service', 'launches flight', 'new destination',
       'expands service', 'adds flight', 'inaugural flight', 'direct flight to',
       'nonstop service', 'new nonstop', 'announces service', 'begins service',
       'new service to', 'daily flights to', 'seasonal flights',
       'expanding service', 'adding service', 'route expansion', 'flight schedule',
-      'begins flying', 'starts flying', 'will fly to', 'flying to'
+      'begins flying', 'starts flying', 'will fly to', 'flying to',
+      // NEW: Minor route changes
+      'increases flights', 'increases service', 'adds daily flight',
+      '4th daily flight', '5th daily flight', '3rd daily flight',
+      'flight arrives in', 'service arrives in', 'connection increases',
+      'regional partner', 'delta connection', 'skywest', 'endeavor air',
+      'abandoning', 'cuts service', 'ends operations at', 'exits market',
+      'discontinues service', 'suspends flights', 'reduces frequency'
+    ];
+
+    // FAA/regulatory news that's generic (not Delta-specific)
+    const faaGenericKeywords = [
+      'faa ends', 'faa lifts', 'faa issues', 'faa requires',
+      'flight restriction order', 'airspace restriction', 'notam',
+      'faa rule', 'faa regulation'
     ];
 
     const hasIncident = incidentKeywords.some(keyword => text.includes(keyword));
+    const hasAirportSecurity = airportSecurityKeywords.some(keyword => text.includes(keyword));
+    const hasAirportInfra = airportInfraKeywords.some(keyword => text.includes(keyword));
+    const hasGenericAirline = genericAirlineKeywords.some(keyword => text.includes(keyword));
     const hasRoute = routeKeywords.some(keyword => text.includes(keyword));
+    const hasFAAGeneric = faaGenericKeywords.some(keyword => text.includes(keyword));
 
     if (hasIncident) {
       console.log(`Filtering Delta incident article: "${title}"`);
       return true;
     }
+    if (hasAirportSecurity) {
+      console.log(`Filtering airport security article (not Delta business): "${title}"`);
+      return true;
+    }
+    if (hasAirportInfra) {
+      console.log(`Filtering airport infrastructure article (not Delta-specific): "${title}"`);
+      return true;
+    }
+    if (hasGenericAirline) {
+      console.log(`Filtering generic airline industry article: "${title}"`);
+      return true;
+    }
     if (hasRoute) {
       console.log(`Filtering Delta route article: "${title}"`);
+      return true;
+    }
+    if (hasFAAGeneric) {
+      console.log(`Filtering generic FAA/regulatory article: "${title}"`);
       return true;
     }
   }

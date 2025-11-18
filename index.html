@@ -994,16 +994,20 @@
     // Refresh stats cards
     async function refreshStats() {
       try {
+        console.log('📊 refreshStats: Starting...');
         const res = await fetch('/api/get_mentions?limit=10000', { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP '+res.status);
         const data = await res.json();
+        console.log(`📊 refreshStats: Loaded ${data.length} total articles`);
 
         // Filter by selected date range (same as loadMentions)
         const dateRange = getDateRange();
+        console.log(`📊 refreshStats: Date range from ${new Date(dateRange.from)} to ${new Date(dateRange.to)}`);
         const filtered = Array.isArray(data) ? data.filter(m => {
           const ts = new Date(m.published).getTime();
           return ts >= dateRange.from && ts <= dateRange.to;
         }) : [];
+        console.log(`📊 refreshStats: ${filtered.length} articles in date range`);
 
         // Calculate counts
         const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
@@ -1673,10 +1677,17 @@ ${articleText}`;
 
     // Auto-collect fresh articles on page load
     async function initializeDashboard() {
-      console.log('🔄 Collecting fresh articles on page load...');
+      console.log('🔄 Dashboard initializing...');
 
       try {
-        // Trigger RSS collection from all sources in parallel
+        // FIRST: Load existing data immediately (show cached data right away)
+        console.log('📊 Loading existing data...');
+        await loadMentions();
+        await Promise.all([refreshStats(), refreshTimestamp()]);
+        console.log('✅ Dashboard loaded with existing data');
+
+        // THEN: Trigger background collection (don't wait for it)
+        console.log('🔄 Starting background collection...');
         const collectionPromises = [
           fetch('/api/collect', { method: 'GET', cache: 'no-store' }).catch(e => {
             console.error('RSS collection error:', e);
@@ -1692,15 +1703,14 @@ ${articleText}`;
           })
         ];
 
-        // Wait for all collections to complete
+        // Wait for collections to complete in background
         const results = await Promise.all(collectionPromises);
-        console.log('✅ RSS collection complete', results);
+        console.log('✅ Background collection complete', results);
 
-        // Now load the dashboard with fresh data
+        // Refresh dashboard with new data
         await loadMentions();
         await Promise.all([refreshStats(), refreshTimestamp()]);
-
-        console.log('✅ Dashboard initialized with fresh data');
+        console.log('✅ Dashboard refreshed with fresh data');
       } catch (error) {
         console.error('❌ Dashboard initialization error:', error);
         // Still try to load cached data even if collection fails
