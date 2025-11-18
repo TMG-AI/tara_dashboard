@@ -22,8 +22,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "article_id required" });
     }
 
-    // Get all articles from ZSET
-    const raw = await redis.zrange(ZSET, 0, -1);
+    // Get all articles from ZSET (use score-based range to get everything)
+    const twoWeeksAgo = Math.floor(Date.now() / 1000) - (14 * 24 * 60 * 60);
+    const now = Math.floor(Date.now() / 1000);
+    const raw = await redis.zrange(ZSET, twoWeeksAgo, now, { byScore: true });
     const articles = raw.map(x => {
       try {
         return JSON.parse(x);
