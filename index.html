@@ -998,12 +998,11 @@
         if (!res.ok) throw new Error('HTTP '+res.status);
         const data = await res.json();
 
-        // Filter to last 24 hours only
-        const now = Date.now();
-        const oneDayAgo = now - (24 * 60 * 60 * 1000);
+        // Filter by selected date range (same as loadMentions)
+        const dateRange = getDateRange();
         const filtered = Array.isArray(data) ? data.filter(m => {
           const ts = new Date(m.published).getTime();
-          return ts >= oneDayAgo;
+          return ts >= dateRange.from && ts <= dateRange.to;
         }) : [];
 
         // Calculate counts
