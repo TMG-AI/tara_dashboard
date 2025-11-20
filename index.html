@@ -831,12 +831,12 @@
           const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
           filtered = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase()));
         } else if (currentFilter === 'newsletters') {
-          const newsletterOrigins = ['newsletter_rss_collect'];
+          const newsletterOrigins = ['newsletter'];
           filtered = filtered.filter(m => newsletterOrigins.includes((m.origin || "").toLowerCase()));
         } else if (currentFilter === 'clients') {
           // Filter for client feeds (everything except top news and newsletters)
           const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
-          const newsletterOrigins = ['newsletter_rss_collect'];
+          const newsletterOrigins = ['newsletter'];
           const allGeneralNews = [...topNewsOrigins, ...newsletterOrigins];
           filtered = filtered.filter(m => !allGeneralNews.includes((m.origin || "").toLowerCase()));
 
@@ -960,10 +960,6 @@
             console.error('RSS collection error:', e);
             return { ok: false, error: e.message };
           }),
-          fetch('/api/newsletter_rss_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
-            console.error('Newsletter collection error:', e);
-            return { ok: false, error: e.message };
-          }),
           fetch('/api/meltwater_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
             console.error('Meltwater collection error:', e);
             return { ok: false, error: e.message };
@@ -1011,7 +1007,7 @@
 
         // Calculate counts
         const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
-        const newsletterOrigins = ['newsletter_rss_collect'];
+        const newsletterOrigins = ['newsletter'];
 
         const topNewsCount = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase())).length;
         const newslettersCount = filtered.filter(m => newsletterOrigins.includes((m.origin || "").toLowerCase())).length;
@@ -1691,10 +1687,6 @@ ${articleText}`;
         const collectionPromises = [
           fetch('/api/collect', { method: 'GET', cache: 'no-store' }).catch(e => {
             console.error('RSS collection error:', e);
-            return { ok: false, error: e.message };
-          }),
-          fetch('/api/newsletter_rss_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
-            console.error('Newsletter collection error:', e);
             return { ok: false, error: e.message };
           }),
           fetch('/api/meltwater_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
