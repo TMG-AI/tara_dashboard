@@ -316,6 +316,9 @@
 
   <!-- Client Filter Cards (Alphabetical) -->
   <div class="client-cards-section">
+    <div style="text-align:center;margin-bottom:16px;color:#666;font-size:13px;font-weight:500">
+      <span id="date-range-label">Last 7 Days</span>
+    </div>
     <div class="client-cards-container">
       <div class="client-card" data-client="delta_air_lines_rss" onclick="filterByClient('delta_air_lines_rss')">
         <div class="client-card-name">Delta Air Lines</div>
@@ -403,8 +406,8 @@
       <div class="filter-section">
         <label style="font-size:13px;font-weight:600;color:#666">Date Range</label>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="date-preset-btn active" onclick="setDatePreset('today')">Today</button>
-          <button class="date-preset-btn" onclick="setDatePreset('7days')">Last 7 Days</button>
+          <button class="date-preset-btn" onclick="setDatePreset('today')">Today</button>
+          <button class="date-preset-btn active" onclick="setDatePreset('7days')">Last 7 Days</button>
           <button class="date-preset-btn" onclick="setDatePreset('14days')">Last 14 Days</button>
           <button class="date-preset-btn" onclick="setDatePreset('all')">All</button>
           <input type="date" id="date-from" onchange="setCustomDateRange()" style="width:140px"/>
@@ -728,7 +731,7 @@
     let allMentions = [];
     let selectedArticles = new Set(); // Track selected articles for summary
     let allArticles = []; // Store all articles for summary
-    let currentDatePreset = 'today'; // Default to today
+    let currentDatePreset = '7days'; // Default to last 7 days
     let customDateFrom = null;
     let customDateTo = null;
 
@@ -747,6 +750,9 @@
         btn.classList.remove('active');
       });
       event.target.classList.add('active');
+
+      // Update date range label
+      updateDateRangeLabel();
 
       // Reload mentions with new date filter
       loadMentions();
@@ -767,8 +773,41 @@
           btn.classList.remove('active');
         });
 
+        // Update date range label
+        updateDateRangeLabel();
+
         // Reload mentions with custom date range
         loadMentions();
+      }
+    }
+
+    // Update the date range label above the cards
+    function updateDateRangeLabel() {
+      const label = document.getElementById('date-range-label');
+      if (!label) return;
+
+      switch(currentDatePreset) {
+        case 'today':
+          label.textContent = 'Today';
+          break;
+        case '7days':
+          label.textContent = 'Last 7 Days';
+          break;
+        case '14days':
+          label.textContent = 'Last 14 Days';
+          break;
+        case 'all':
+          label.textContent = 'All Time';
+          break;
+        case 'custom':
+          if (customDateFrom && customDateTo) {
+            const fromDate = new Date(customDateFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const toDate = new Date(customDateTo).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            label.textContent = `${fromDate} - ${toDate}`;
+          }
+          break;
+        default:
+          label.textContent = 'Last 7 Days';
       }
     }
 
@@ -991,7 +1030,7 @@
     async function refreshStats() {
       try {
         console.log('📊 refreshStats: Starting...');
-        const res = await fetch('/api/get_mentions?limit=10000', { cache: 'no-store' });
+        const res = await fetch('/api/get_mentions?limit=500', { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP '+res.status);
         const data = await res.json();
         console.log(`📊 refreshStats: Loaded ${data.length} total articles`);
