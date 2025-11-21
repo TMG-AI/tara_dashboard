@@ -138,16 +138,16 @@ export default async function handler(req, res) {
     const section = (url.searchParams.get("section") || "").trim();
     const q = (url.searchParams.get("q") || "").toLowerCase().trim();
 
-    // 1. Get data from last 24 hours from Redis (matches retention policy)
+    // 1. Get data from last 14 days from Redis (matches retention policy)
     let redisItems = [];
     try {
       const now = Math.floor(Date.now() / 1000);
-      const oneDayAgo = now - (24 * 60 * 60); // 24 hours in seconds
+      const twoWeeksAgo = now - (14 * 24 * 60 * 60); // 14 days in seconds
 
-      console.log(`Fetching from Redis: ${oneDayAgo} to ${now}`);
+      console.log(`Fetching from Redis: ${twoWeeksAgo} to ${now}`);
 
-      // Use zrange with byScore option to get items from last 24 hours
-      const raw = await redis.zrange(ZSET, oneDayAgo, now, { byScore: true });
+      // Use zrange with byScore option to get items from last 14 days
+      const raw = await redis.zrange(ZSET, twoWeeksAgo, now, { byScore: true });
 
       console.log(`Raw items fetched: ${raw.length}`);
       console.log(`Raw item type: ${typeof raw[0]}`);
