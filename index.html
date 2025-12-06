@@ -1026,23 +1026,39 @@
       }
     });
 
-    // Refresh stats cards
+    // Refresh stats cards - uses allMentions if available, otherwise fetches fresh
     async function refreshStats() {
       try {
         console.log('📊 refreshStats: Starting...');
-        const res = await fetch('/api/get_mentions?limit=500', { cache: 'no-store' });
-        if (!res.ok) throw new Error('HTTP '+res.status);
-        const data = await res.json();
-        console.log(`📊 refreshStats: Loaded ${data.length} total articles`);
+
+        // Use allMentions if already loaded by loadMentions(), otherwise fetch fresh
+        let data;
+        if (allMentions && allMentions.length > 0) {
+          console.log(`📊 refreshStats: Using cached allMentions (${allMentions.length} items)`);
+          data = allMentions;
+        } else {
+          console.log('📊 refreshStats: Fetching fresh data...');
+          const res = await fetch('/api/get_mentions?limit=500', { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP '+res.status);
+          data = await res.json();
+          console.log(`📊 refreshStats: Loaded ${Array.isArray(data) ? data.length : 0} total articles`);
+        }
+
+        if (!Array.isArray(data)) {
+          console.error('📊 refreshStats: Data is not an array:', data);
+          data = [];
+        }
 
         // Filter by selected date range (same as loadMentions)
         const dateRange = getDateRange();
-        console.log(`📊 refreshStats: Date range from ${new Date(dateRange.from)} to ${new Date(dateRange.to)}`);
-        const filtered = Array.isArray(data) ? data.filter(m => {
+        console.log(`📊 refreshStats: Date range from ${new Date(dateRange.from).toISOString()} to ${new Date(dateRange.to).toISOString()}`);
+
+        const filtered = data.filter(m => {
           const ts = new Date(m.published).getTime();
-          return ts >= dateRange.from && ts <= dateRange.to;
-        }) : [];
-        console.log(`📊 refreshStats: ${filtered.length} articles in date range`);
+          const inRange = ts >= dateRange.from && ts <= dateRange.to;
+          return inRange;
+        });
+        console.log(`📊 refreshStats: ${filtered.length} articles in date range (from ${data.length} total)`);
 
         // Calculate counts
         const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
@@ -1050,12 +1066,6 @@
 
         const topNewsCount = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase())).length;
         const newslettersCount = filtered.filter(m => newsletterOrigins.includes((m.origin || "").toLowerCase())).length;
-
-        const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) && n.toLocaleString) ? n.toLocaleString() : (n ?? '0');
-        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = fmt(val); };
-
-        setText('sb-top-news', topNewsCount);
-        setText('sb-newsletters', newslettersCount);
 
         // Calculate individual client counts
         const waymoCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'waymo_rss').length;
@@ -1068,14 +1078,35 @@
           return origin === 'us_soccer_foundation_rss' || origin === 'cindy_parlow_cone_rss';
         }).length;
 
+        console.log(`📊 refreshStats: Counts - Top News: ${topNewsCount}, Newsletters: ${newslettersCount}, Waymo: ${waymoCount}, Delta: ${deltaCount}, Google: ${googleCount}, StubHub: ${stubhubCount}, TikTok: ${tiktokCount}, US Soccer: ${ussoccerCount}`);
+
+        // Update DOM elements
+        const setText = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.textContent = typeof val === 'number' ? val.toLocaleString() : '0';
+          } else {
+            console.error(`📊 refreshStats: Element not found: ${id}`);
+          }
+        };
+
+        setText('sb-top-news', topNewsCount);
+        setText('sb-newsletters', newslettersCount);
         setText('client-waymo', waymoCount);
         setText('client-delta', deltaCount);
         setText('client-google', googleCount);
         setText('client-stubhub', stubhubCount);
         setText('client-tiktok', tiktokCount);
         setText('client-ussoccer', ussoccerCount);
+
+        console.log('📊 refreshStats: Complete');
       } catch(e) {
-        console.error('Error refreshing stats:', e);
+        console.error('📊 refreshStats Error:', e);
+        // Set all counts to 0 on error so they don't stay as "—"
+        ['sb-top-news', 'sb-newsletters', 'client-waymo', 'client-delta', 'client-google', 'client-stubhub', 'client-tiktok', 'client-ussoccer'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '0';
+        });
       }
     }
 

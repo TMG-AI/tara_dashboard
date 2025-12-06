@@ -111,6 +111,113 @@ export function isStockPriceFocused(title, summary, source) {
 }
 
 /**
+ * Detect if an article is about new product launches or feature announcements
+ * COO managing corporate clients needs strategic/regulatory/business news, not product updates
+ */
+export function isProductAnnouncement(title, summary) {
+  const text = `${title} ${summary}`.toLowerCase();
+  const titleLower = title.toLowerCase();
+
+  // Product launch indicators
+  const launchKeywords = [
+    'launches new',
+    'unveils new',
+    'introduces new',
+    'announces new',
+    'rolls out new',
+    'releases new',
+    'debuts new',
+    'reveals new',
+    'new product',
+    'new feature',
+    'new service',
+    'new tool',
+    'new app',
+    'new update',
+    'new version',
+    'latest feature',
+    'latest update',
+    'just launched',
+    'now available',
+    'coming soon',
+    'beta launch',
+    'public beta',
+    'early access',
+    'sneak peek',
+    'first look at',
+    'gets new',
+    'adding new',
+    'brings new'
+  ];
+
+  // Feature update indicators
+  const featureKeywords = [
+    'feature update',
+    'new functionality',
+    'added support for',
+    'now supports',
+    'new capability',
+    'new integration',
+    'new option',
+    'redesigned',
+    'revamped',
+    'overhauled',
+    'refreshed look',
+    'new look',
+    'new design',
+    'ui update',
+    'interface update',
+    'new dashboard',
+    'enhanced with',
+    'improved with',
+    'upgraded to',
+    'version 2',
+    'version 3',
+    'v2.0',
+    'v3.0'
+  ];
+
+  // Tech product announcement patterns
+  const techProductPatterns = [
+    'how to use',
+    'how to set up',
+    'getting started with',
+    'tutorial:',
+    'guide:',
+    'tips for using',
+    'everything you need to know about the new',
+    'here\'s what\'s new',
+    'what\'s new in',
+    'meet the new',
+    'say hello to',
+    'introducing:'
+  ];
+
+  const hasLaunchKeyword = launchKeywords.some(keyword => text.includes(keyword));
+  const hasFeatureKeyword = featureKeywords.some(keyword => text.includes(keyword));
+  const hasTechPattern = techProductPatterns.some(pattern => text.includes(pattern));
+
+  // Business-critical exceptions - don't filter these even if they mention "new"
+  const businessCriticalKeywords = [
+    'antitrust', 'lawsuit', 'regulation', 'regulatory', 'congress', 'senate',
+    'house', 'investigation', 'probe', 'fine', 'penalty', 'settlement',
+    'ceo', 'executive', 'layoff', 'restructuring', 'acquisition', 'merger',
+    'ipo', 'earnings', 'revenue', 'profit', 'loss', 'quarterly', 'annual report',
+    'data breach', 'security incident', 'privacy', 'ftc', 'doj', 'sec',
+    'partnership', 'deal', 'contract', 'billion', 'million dollar'
+  ];
+
+  const isBusinessCritical = businessCriticalKeywords.some(keyword => text.includes(keyword));
+
+  // If it's business-critical news, don't filter even if it mentions products
+  if (isBusinessCritical) {
+    return false;
+  }
+
+  return hasLaunchKeyword || hasFeatureKeyword || hasTechPattern;
+}
+
+/**
  * Detect if an article is an op-ed or opinion piece
  * Should be excluded per editorial guidelines
  */
@@ -215,6 +322,11 @@ export function shouldFilterArticle(origin, title, summary, source, link) {
 
   if (isOpinionPiece(title, summary, source, link)) {
     console.log(`Filtering opinion piece: "${title}"`);
+    return true;
+  }
+
+  if (isProductAnnouncement(title, summary)) {
+    console.log(`Filtering product/feature announcement: "${title}"`);
     return true;
   }
 

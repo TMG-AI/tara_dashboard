@@ -108,5 +108,26 @@ Deployed on Vercel with:
 
 1. **RSS Collection**: Cron job fetches feeds → parses articles → matches keywords → stores in Redis
 2. **Webhook Ingestion**: External services POST to webhook endpoints → transform data → store in Redis
-3. **Dashboard**: Frontend fetches from `/api/summary` → displays mentions by time period and source
+3. **Dashboard**: Frontend fetches from `/api/get_mentions` → displays mentions by time period and source
 4. **Deduplication**: All mentions checked against canonical URL set to prevent duplicates
+
+## Recent Changes (2025-12-02)
+
+### Added: Product/Feature Announcement Filter
+- **Purpose**: COO managing corporate clients needs strategic, regulatory, and business news - not product launches or feature updates
+- **Implementation** (`api/content_filters.js:117-218`):
+  - New `isProductAnnouncement()` function filters articles about:
+    - Product launches ("launches new", "unveils new", "introduces new", etc.)
+    - Feature updates ("new feature", "now available", "gets new", etc.)
+    - Tech tutorials ("how to use", "getting started with", etc.)
+  - **Business-critical exceptions**: Articles mentioning antitrust, lawsuits, regulation, CEO, layoffs, acquisitions, earnings, data breaches, etc. are NOT filtered even if they mention "new"
+  - Filter only applies to client feeds (Waymo, Delta, Google, StubHub, TikTok, US Soccer) - NOT to general news (NYT, WaPo, Politico)
+
+### Fixed: Summary Card Counts Not Loading (2025-12-01)
+- **Issue**: The client and category card counts at the top of the dashboard were showing "—" instead of numbers, even though articles were loading in the list
+- **Root cause**: The `refreshStats()` function was making a redundant API call that could fail silently, and error handling didn't update the UI
+- **Fix** (`index.html:1030-1111`):
+  - `refreshStats()` now reuses the `allMentions` array already loaded by `loadMentions()` instead of making a separate API call
+  - Added extensive console logging for debugging
+  - On error, now sets all counts to `'0'` instead of leaving them as `'—'`
+  - Better validation that data is an array before processing
