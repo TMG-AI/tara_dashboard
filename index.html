@@ -1741,41 +1741,30 @@ ${articleText}`;
       loadMentions();
     }
 
-    // Auto-collect fresh articles on page load
+    // Load dashboard on page load
     async function initializeDashboard() {
       console.log('🔄 Dashboard initializing...');
 
       try {
-        // FIRST: Load existing data immediately (show cached data right away)
+        // Load existing data and show stats immediately
         console.log('📊 Loading existing data...');
         await loadMentions();
-        await Promise.all([refreshStats(), refreshTimestamp()]);
-        console.log('✅ Dashboard loaded with existing data');
+        refreshStats();
+        refreshTimestamp();
+        console.log('✅ Dashboard loaded');
 
-        // THEN: Trigger background collection (don't wait for it)
-        console.log('🔄 Starting background collection...');
-        const collectionPromises = [
-          fetch('/api/collect', { method: 'GET', cache: 'no-store' }).catch(e => {
-            console.error('RSS collection error:', e);
-            return { ok: false, error: e.message };
-          }),
-          fetch('/api/meltwater_collect', { method: 'GET', cache: 'no-store' }).catch(e => {
-            console.error('Meltwater collection error:', e);
-            return { ok: false, error: e.message };
+        // Trigger RSS collection in background (non-blocking)
+        fetch('/api/collect', { method: 'GET', cache: 'no-store' })
+          .then(() => {
+            console.log('✅ RSS collection complete');
+            loadMentions().then(() => {
+              refreshStats();
+            });
           })
-        ];
+          .catch(e => console.error('RSS collection error:', e));
 
-        // Wait for collections to complete in background
-        const results = await Promise.all(collectionPromises);
-        console.log('✅ Background collection complete', results);
-
-        // Refresh dashboard with new data
-        await loadMentions();
-        await Promise.all([refreshStats(), refreshTimestamp()]);
-        console.log('✅ Dashboard refreshed with fresh data');
       } catch (error) {
         console.error('❌ Dashboard initialization error:', error);
-        // Still try to load cached data even if collection fails
         loadMentions();
         refreshStats();
         refreshTimestamp();
