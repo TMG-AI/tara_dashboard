@@ -677,7 +677,10 @@
           const isClientFeed = !topNewsOrigins.includes(origin) && !localNewsOrigins.includes(origin) && origin;
           const clientName = isClientFeed ? formatClientName(article.origin) : '';
 
-          // Create card structure
+          // Check if article has a valid link
+          const hasValidLink = article.link && article.link.startsWith('http');
+
+          // Create card structure - only make title clickable if there's a valid link
           div.innerHTML=`
             <div class="card-content">
               <div style="display:flex;align-items:flex-start;margin-bottom:10px">
@@ -685,10 +688,10 @@
                        class="flag-checkbox"
                        data-article-id="${article.id}"
                        data-article-title="${article.title.replace(/"/g, '&quot;')}"
-                       data-article-link="${article.link}"
+                       data-article-link="${article.link || ''}"
                        data-article-source="${article.source}"
                        ${isSelected ? 'checked' : ''}>
-                <h3 class="card-title" style="flex:1;margin:0"><a href="${article.link}" target="_blank" rel="noopener"></a></h3>
+                <h3 class="card-title" style="flex:1;margin:0">${hasValidLink ? `<a href="${article.link}" target="_blank" rel="noopener"></a>` : '<span class="no-link"></span>'}</h3>
               </div>
               <div class="meta">
                 <div>${article.source || article.provider || 'Newsletter'} · ${formatDate(article.published)}${clientName ? ` · <strong style="color:#4a6741">${clientName}</strong>` : ''}</div>
@@ -697,12 +700,12 @@
             </div>`;
 
           // Safely set title and summary using textContent to decode HTML entities and strip tags
-          const titleLink = div.querySelector('.card-title a');
-          if (titleLink) {
+          const titleElement = div.querySelector('.card-title a') || div.querySelector('.card-title .no-link');
+          if (titleElement) {
             // Use DOMParser to strip HTML tags and decode entities
             const parser = new DOMParser();
             const doc = parser.parseFromString(article.title, 'text/html');
-            titleLink.textContent = doc.body.textContent || article.title;
+            titleElement.textContent = doc.body.textContent || article.title;
           }
 
           if (summaryText) {
@@ -1026,88 +1029,47 @@
       }
     });
 
-    // Refresh stats cards - uses allMentions if available, otherwise fetches fresh
-    async function refreshStats() {
-      try {
-        console.log('📊 refreshStats: Starting...');
+    // Refresh stats cards - counts articles by origin
+    function refreshStats() {
+      console.log('📊 refreshStats called, allMentions length:', allMentions.length);
 
-        // Use allMentions if already loaded by loadMentions(), otherwise fetch fresh
-        let data;
-        if (allMentions && allMentions.length > 0) {
-          console.log(`📊 refreshStats: Using cached allMentions (${allMentions.length} items)`);
-          data = allMentions;
-        } else {
-          console.log('📊 refreshStats: Fetching fresh data...');
-          const res = await fetch('/api/get_mentions?limit=500', { cache: 'no-store' });
-          if (!res.ok) throw new Error('HTTP '+res.status);
-          data = await res.json();
-          console.log(`📊 refreshStats: Loaded ${Array.isArray(data) ? data.length : 0} total articles`);
-        }
-
-        if (!Array.isArray(data)) {
-          console.error('📊 refreshStats: Data is not an array:', data);
-          data = [];
-        }
-
-        // Filter by selected date range (same as loadMentions)
-        const dateRange = getDateRange();
-        console.log(`📊 refreshStats: Date range from ${new Date(dateRange.from).toISOString()} to ${new Date(dateRange.to).toISOString()}`);
-
-        const filtered = data.filter(m => {
-          const ts = new Date(m.published).getTime();
-          const inRange = ts >= dateRange.from && ts <= dateRange.to;
-          return inRange;
-        });
-        console.log(`📊 refreshStats: ${filtered.length} articles in date range (from ${data.length} total)`);
-
-        // Calculate counts
-        const topNewsOrigins = ['nyt_top_news_rss', 'wapo_national_news_rss', 'wapo_politics_rss', 'politico_rss'];
-        const newsletterOrigins = ['newsletter'];
-
-        const topNewsCount = filtered.filter(m => topNewsOrigins.includes((m.origin || "").toLowerCase())).length;
-        const newslettersCount = filtered.filter(m => newsletterOrigins.includes((m.origin || "").toLowerCase())).length;
-
-        // Calculate individual client counts
-        const waymoCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'waymo_rss').length;
-        const deltaCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'delta_air_lines_rss').length;
-        const googleCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'google_rss').length;
-        const stubhubCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'stubhub_rss').length;
-        const tiktokCount = filtered.filter(m => (m.origin || "").toLowerCase() === 'tiktok_rss').length;
-        const ussoccerCount = filtered.filter(m => {
-          const origin = (m.origin || "").toLowerCase();
-          return origin === 'us_soccer_foundation_rss' || origin === 'cindy_parlow_cone_rss';
-        }).length;
-
-        console.log(`📊 refreshStats: Counts - Top News: ${topNewsCount}, Newsletters: ${newslettersCount}, Waymo: ${waymoCount}, Delta: ${deltaCount}, Google: ${googleCount}, StubHub: ${stubhubCount}, TikTok: ${tiktokCount}, US Soccer: ${ussoccerCount}`);
-
-        // Update DOM elements
-        const setText = (id, val) => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.textContent = typeof val === 'number' ? val.toLocaleString() : '0';
-          } else {
-            console.error(`📊 refreshStats: Element not found: ${id}`);
-          }
-        };
-
-        setText('sb-top-news', topNewsCount);
-        setText('sb-newsletters', newslettersCount);
-        setText('client-waymo', waymoCount);
-        setText('client-delta', deltaCount);
-        setText('client-google', googleCount);
-        setText('client-stubhub', stubhubCount);
-        setText('client-tiktok', tiktokCount);
-        setText('client-ussoccer', ussoccerCount);
-
-        console.log('📊 refreshStats: Complete');
-      } catch(e) {
-        console.error('📊 refreshStats Error:', e);
-        // Set all counts to 0 on error so they don't stay as "—"
-        ['sb-top-news', 'sb-newsletters', 'client-waymo', 'client-delta', 'client-google', 'client-stubhub', 'client-tiktok', 'client-ussoccer'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.textContent = '0';
-        });
+      if (!allMentions || allMentions.length === 0) {
+        console.log('📊 No mentions loaded yet');
+        return;
       }
+
+      // Filter by selected date range
+      const dateRange = getDateRange();
+      const filtered = allMentions.filter(m => {
+        const ts = new Date(m.published).getTime();
+        return ts >= dateRange.from && ts <= dateRange.to;
+      });
+
+      console.log('📊 Filtered:', filtered.length, 'of', allMentions.length);
+
+      // Count by origin
+      const counts = {};
+      filtered.forEach(m => {
+        const origin = (m.origin || 'unknown').toLowerCase();
+        counts[origin] = (counts[origin] || 0) + 1;
+      });
+      console.log('📊 Counts by origin:', counts);
+
+      // Update client cards
+      document.getElementById('client-waymo').textContent = counts['waymo_rss'] || 0;
+      document.getElementById('client-delta').textContent = counts['delta_air_lines_rss'] || 0;
+      document.getElementById('client-google').textContent = counts['google_rss'] || 0;
+      document.getElementById('client-stubhub').textContent = counts['stubhub_rss'] || 0;
+      document.getElementById('client-tiktok').textContent = counts['tiktok_rss'] || 0;
+      document.getElementById('client-ussoccer').textContent = (counts['us_soccer_foundation_rss'] || 0) + (counts['cindy_parlow_cone_rss'] || 0);
+
+      // Update category cards
+      const topNewsCount = (counts['nyt_top_news_rss'] || 0) + (counts['wapo_national_news_rss'] || 0) +
+                          (counts['wapo_politics_rss'] || 0) + (counts['politico_rss'] || 0);
+      document.getElementById('sb-top-news').textContent = topNewsCount;
+      document.getElementById('sb-newsletters').textContent = counts['newsletter'] || 0;
+
+      console.log('📊 Stats updated');
     }
 
     // Refresh timestamp
