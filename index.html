@@ -855,6 +855,9 @@
         // Store all mentions for filtering
         allMentions = Array.isArray(data) ? data : [];
 
+        // Update stats cards immediately after data loads (before rendering cards)
+        refreshStats();
+
         // Populate feed dropdown with available feeds
         populateFeedDropdown();
 
@@ -938,9 +941,6 @@
         for (let i=0;i<filtered.length;i++){
           await addArticleCard(list, filtered[i], i*0.05);
         }
-
-        // Update stats cards after loading mentions
-        refreshStats();
       }catch(e){
         removeLoadingSkeletons();
         const el=document.getElementById('err'); el.style.display='block';
