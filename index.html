@@ -938,6 +938,9 @@
         for (let i=0;i<filtered.length;i++){
           await addArticleCard(list, filtered[i], i*0.05);
         }
+
+        // Update stats cards after loading mentions
+        refreshStats();
       }catch(e){
         removeLoadingSkeletons();
         const el=document.getElementById('err'); el.style.display='block';
@@ -1031,45 +1034,57 @@
 
     // Refresh stats cards - counts articles by origin
     function refreshStats() {
-      console.log('📊 refreshStats called, allMentions length:', allMentions.length);
+      try {
+        console.log('📊 refreshStats called, allMentions length:', allMentions ? allMentions.length : 0);
 
-      if (!allMentions || allMentions.length === 0) {
-        console.log('📊 No mentions loaded yet');
-        return;
+        // Set all to 0 first, then update with actual counts
+        const cardIds = ['client-waymo', 'client-delta', 'client-google', 'client-stubhub',
+                        'client-tiktok', 'client-ussoccer', 'sb-top-news', 'sb-newsletters'];
+        cardIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '0';
+        });
+
+        if (!allMentions || allMentions.length === 0) {
+          console.log('📊 No mentions loaded yet - cards set to 0');
+          return;
+        }
+
+        // Filter by selected date range
+        const dateRange = getDateRange();
+        const filtered = allMentions.filter(m => {
+          const ts = new Date(m.published).getTime();
+          return ts >= dateRange.from && ts <= dateRange.to;
+        });
+
+        console.log('📊 Filtered:', filtered.length, 'of', allMentions.length);
+
+        // Count by origin
+        const counts = {};
+        filtered.forEach(m => {
+          const origin = (m.origin || 'unknown').toLowerCase();
+          counts[origin] = (counts[origin] || 0) + 1;
+        });
+        console.log('📊 Counts by origin:', JSON.stringify(counts));
+
+        // Update client cards
+        document.getElementById('client-waymo').textContent = counts['waymo_rss'] || 0;
+        document.getElementById('client-delta').textContent = counts['delta_air_lines_rss'] || 0;
+        document.getElementById('client-google').textContent = counts['google_rss'] || 0;
+        document.getElementById('client-stubhub').textContent = counts['stubhub_rss'] || 0;
+        document.getElementById('client-tiktok').textContent = counts['tiktok_rss'] || 0;
+        document.getElementById('client-ussoccer').textContent = (counts['us_soccer_foundation_rss'] || 0) + (counts['cindy_parlow_cone_rss'] || 0);
+
+        // Update category cards
+        const topNewsCount = (counts['nyt_top_news_rss'] || 0) + (counts['wapo_national_news_rss'] || 0) +
+                            (counts['wapo_politics_rss'] || 0) + (counts['politico_rss'] || 0);
+        document.getElementById('sb-top-news').textContent = topNewsCount;
+        document.getElementById('sb-newsletters').textContent = counts['newsletter'] || 0;
+
+        console.log('📊 Stats updated successfully');
+      } catch (err) {
+        console.error('📊 refreshStats error:', err);
       }
-
-      // Filter by selected date range
-      const dateRange = getDateRange();
-      const filtered = allMentions.filter(m => {
-        const ts = new Date(m.published).getTime();
-        return ts >= dateRange.from && ts <= dateRange.to;
-      });
-
-      console.log('📊 Filtered:', filtered.length, 'of', allMentions.length);
-
-      // Count by origin
-      const counts = {};
-      filtered.forEach(m => {
-        const origin = (m.origin || 'unknown').toLowerCase();
-        counts[origin] = (counts[origin] || 0) + 1;
-      });
-      console.log('📊 Counts by origin:', counts);
-
-      // Update client cards
-      document.getElementById('client-waymo').textContent = counts['waymo_rss'] || 0;
-      document.getElementById('client-delta').textContent = counts['delta_air_lines_rss'] || 0;
-      document.getElementById('client-google').textContent = counts['google_rss'] || 0;
-      document.getElementById('client-stubhub').textContent = counts['stubhub_rss'] || 0;
-      document.getElementById('client-tiktok').textContent = counts['tiktok_rss'] || 0;
-      document.getElementById('client-ussoccer').textContent = (counts['us_soccer_foundation_rss'] || 0) + (counts['cindy_parlow_cone_rss'] || 0);
-
-      // Update category cards
-      const topNewsCount = (counts['nyt_top_news_rss'] || 0) + (counts['wapo_national_news_rss'] || 0) +
-                          (counts['wapo_politics_rss'] || 0) + (counts['politico_rss'] || 0);
-      document.getElementById('sb-top-news').textContent = topNewsCount;
-      document.getElementById('sb-newsletters').textContent = counts['newsletter'] || 0;
-
-      console.log('📊 Stats updated');
     }
 
     // Refresh timestamp
